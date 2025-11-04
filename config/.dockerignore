@@ -1,0 +1,11 @@
+# Arquivo para ignorar no Docker
+node_modules
+npm-debug.log
+.git
+.gitignore
+README*.md
+Dockerfile
+docker-compose.yml
+.dockerignore
+*.bat
+*.ps1

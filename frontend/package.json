@@ -1,0 +1,27 @@
+{
+  "name": "tga-2025-goat-vote",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "backend": "C:/Python314/python.exe ../backend/app.py",
+    "docker:build": "cd ../docker && docker-compose build",
+    "docker:up": "cd ../docker && docker-compose up -d",
+    "docker:dev": "cd ../docker && docker-compose up --build",
+    "docker:down": "cd ../docker && docker-compose down",
+    "docker:logs": "cd ../docker && docker-compose logs -f"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
