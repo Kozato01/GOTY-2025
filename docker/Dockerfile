@@ -24,9 +24,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Instala dependências do sistema
+# Instala dependências do sistema (curl não é mais necessário sem health check)
 RUN apt-get update && apt-get install -y \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copia requirements e instala dependências Python
@@ -54,10 +53,6 @@ ENV PORT=8080
 
 # Expõe a porta
 EXPOSE 8080
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/api/health || exit 1
 
 # Comando para iniciar o servidor
 CMD ["python", "app.py"]
