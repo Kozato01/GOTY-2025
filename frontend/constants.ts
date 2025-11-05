@@ -1,8 +1,5 @@
 
 import { Category, Winners } from './types';
-
-// CONTROLE AQUI A VISIBILIDADE DOS RESULTADOS
-// Valor será carregado dinamicamente da API
 export let SHOW_RESULTS = true;
 
 export const CATEGORIES: Category[] = [
@@ -10,50 +7,28 @@ export const CATEGORIES: Category[] = [
         id: 1,
         name: "Jogo do Ano",
         points: 10,
-        options: [
-            "Elden Ring Shadow Of The Erdtree",
-            "Black Myth: Wukong",
-            "Astro Bot",
-            "Balatro",
-            "Final Fantasy 7 Rebirth",
-            "Metaphor: ReFantazio",
+        options: ["Elden Ring Shadow Of The Erdtree","Black Myth: Wukong","Astro Bot","Balatro","Final Fantasy 7 Rebirth","Metaphor: ReFantazio",
         ],
     },
     {
         id: 2,
         name: "Melhor Direção de Jogo",
         points: 5,
-        options: [
-            "Astro Bot",
-            "Balatro",
-            "Elden Ring Shadow Of The Erdtree",
-            "Final Fantasy 7 Rebirth",
-            "Black Myth: Wukong",
-            "Metaphor: ReFantazio",
+        options: ["Astro Bot","Balatro","Elden Ring Shadow Of The Erdtree","Final Fantasy 7 Rebirth","Black Myth: Wukong","Metaphor: ReFantazio",
         ],
     },
     {
         id: 3,
         name: "Melhor Narrativa",
         points: 5,
-        options: [
-            "Final Fantasy 7 Rebirth",
-            "Like a Dragon Infinite Wealth",
-            "Metaphor ReFantazio",
-            "Senua’s Saga Hellblade 2",
-            "Silent Hill 2",
+        options: ["Final Fantasy 7 Rebirth","Like a Dragon Infinite Wealth","Metaphor ReFantazio","Senua’s Saga Hellblade 2","Silent Hill 2",
         ],
     },
     {
         id: 4,
         name: "Melhor Direção de Arte",
         points: 5,
-        options: [
-            "Astro Bot",
-            "Black Myth Wukong",
-            "Elden Ring Shadow of the Erdtree",
-            "Metaphor ReFantazio",
-            "Neva",
+        options: ["Astro Bot","Black Myth Wukong","Elden Ring Shadow of the Erdtree","Metaphor ReFantazio","Neva",
         ],
     },
     {
@@ -185,30 +160,25 @@ export const CATEGORIES: Category[] = [
 ];
 
 
-export const WINNERS: Winners = {
-    "Jogo do Ano": "Astro Bot",
-    "Melhor Direção de Jogo": "Astro Bot",
-    "Melhor Narrativa": "Metaphor ReFantazio",
-    "Melhor Direção de Arte": "Metaphor ReFantazio",
-    "Melhor Trilha Sonora": "Final Fantasy 7 Rebirth",
-    "Melhor Design de Áudio": "Senua’s Saga Hellblade 2",
-    "Melhor Atuação": "Melina Juergens (Senua, de Hellblade 2)",
-    "Inovação em Acessibilidade": "Prince of Persia The Lost Crown",
-    "Jogos com Maior Impacto Social": "Neva",
-    "Melhor Jogo Contínuo": "Helldivers 2",
-    "Melhor Suporte à Comunidade": "Baldur’s Gate 3",
-    "Melhor Jogo Independente": "Balatro",
-    "Melhor Estreia de um Estúdio Indie": "Balatro",
-    "Melhor Jogo Mobile": "Balatro",
-    "Melhor VR / AR": "Batman Arkham Shadow",
-    "Melhor Jogo de Ação": "Black Myth Wukong",
-    "Melhor Jogo de Ação / Aventura": "Astro Bot",
-    "Melhor RPG": "Metaphor ReFantazio",
-    "Melhor Jogo de Luta": "Tekken 8",
-    "Melhor Jogo para Família": "Astro Bot",
-    "Melhor Jogo de Simulação / Estratégia": "Frostpunk 2",
-    "Melhor Jogo de Esporte / Corrida": "EA Sports FC 25",
-    "Melhor Jogo Multiplayer": "Helldivers 2",
-    "Melhor Adaptação": "Fallout",
-    "Jogo Mais Aguardado de 2025": "GTA 6",
+// GANHADORES - Carregados dinamicamente da API
+export let WINNERS: Winners = {};
+
+// Função para atualizar os ganhadores
+export const updateWinners = (newWinners: Winners) => {
+    Object.keys(WINNERS).forEach(key => delete WINNERS[key]);
+    Object.assign(WINNERS, newWinners);
+};
+
+// Função para obter ganhadores da API
+export const loadWinners = async (): Promise<Winners> => {
+    try {
+        const API_BASE_URL = window.location.origin;
+        const response = await fetch(`${API_BASE_URL}/api/winners`);
+        if (response.ok) {const winners = await response.json();updateWinners(winners);return winners;
+        }
+        return {};
+    } catch (error) {
+        console.error('Erro ao carregar ganhadores:', error);
+        return {};
+    }
 };

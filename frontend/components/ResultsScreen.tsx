@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { UserVote, UserScore } from '../types';
-import { CATEGORIES, WINNERS } from '../constants';
+import { UserVote, UserScore, Winners } from '../types';
+import { CATEGORIES, loadWinners } from '../constants';
 import { ApiService } from '../services/api';
 
 interface ResultsScreenProps {
@@ -11,21 +11,27 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ allVotes }) => {
   const [detailedView, setDetailedView] = useState<string | null>(null);
   const [showResults, setShowResults] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [winners, setWinners] = useState<Winners>({});
 
   useEffect(() => {
-    const loadConfig = async () => {
+    const loadData = async () => {
       try {
-        const response = await ApiService.getConfig();
-        setShowResults(response.config.showResults);
+        const [configResponse, winnersData] = await Promise.all([
+          ApiService.getConfig(),
+          loadWinners()
+        ]);
+        setShowResults(configResponse.config.showResults);
+        setWinners(winnersData);
       } catch (error) {
-        console.error('Erro ao carregar configuração:', error);
+        console.error('Erro ao carregar dados:', error);
         setShowResults(false);
+        setWinners({});
       } finally {
         setLoading(false);
       }
     };
 
-    loadConfig();
+    loadData();
   }, []);
 
   const categoryPointsMap = useMemo(() => {
@@ -40,7 +46,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ allVotes }) => {
     const scores: UserScore[] = allVotes.map(userVote => {
       let score = 0;
       for (const categoryName in userVote.votes) {
-        if (userVote.votes[categoryName] === WINNERS[categoryName]) {
+        if (userVote.votes[categoryName] === winners[categoryName]) {
           score += categoryPointsMap.get(categoryName) || 0;
         }
       }
@@ -48,7 +54,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ allVotes }) => {
     });
 
     return scores.sort((a, b) => b.score - a.score);
-  }, [allVotes, categoryPointsMap, showResults]);
+  }, [allVotes, categoryPointsMap, showResults, winners]);
   
   const handleDownloadCSV = () => {
     if (leaderboard.length === 0) return;
@@ -156,7 +162,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ allVotes }) => {
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
                   {CATEGORIES.map(category => {
                     const userVote = user.votes[category.name];
-                    const winner = WINNERS[category.name];
+                    const winner = winners[category.name];
                     const isCorrect = userVote === winner;
                     return (
                       <li key={category.id} className="flex justify-between items-center py-1 border-b border-gray-800">

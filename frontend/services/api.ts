@@ -132,4 +132,43 @@ export class ApiService {
       throw error;
     }
   }
+
+  // Obtém ganhadores atuais
+  static async getWinners(): Promise<Record<string, string>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/winners`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erro ao carregar ganhadores:', error);
+      return {};
+    }
+  }
+
+  // Atualiza ganhadores (webhook)
+  static async setWinners(winners: Record<string, string>): Promise<{ success: boolean }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/winners`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(winners)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erro ao atualizar ganhadores:', error);
+      throw error;
+    }
+  }
 }

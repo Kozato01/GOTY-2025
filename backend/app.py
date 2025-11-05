@@ -11,6 +11,7 @@ CORS(app)  # Permite requisições do frontend
 # Nome do arquivo CSV
 CSV_FILE = os.getenv('CSV_FILE', 'data/usuarios.csv')  # Permite configurar via env var
 CONFIG_FILE = 'data/config.json'
+WINNERS_FILE = 'data/winners.json'
 
 # Cabeçalhos das categorias TGA baseado no arquivo constants.ts
 CATEGORIES = [
@@ -69,6 +70,26 @@ def save_config(config):
         os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
         with open(CONFIG_FILE, 'w', encoding='utf-8') as file:
             json.dump(config, file, indent=2, ensure_ascii=False)
+        return True
+    except Exception:
+        return False
+
+def load_winners():
+    """Carrega ganhadores do arquivo JSON"""
+    try:
+        if os.path.exists(WINNERS_FILE):
+            with open(WINNERS_FILE, 'r', encoding='utf-8') as file:
+                return json.load(file)
+        return {}
+    except Exception:
+        return {}
+
+def save_winners(winners_data):
+    """Salva ganhadores no arquivo JSON"""
+    try:
+        os.makedirs(os.path.dirname(WINNERS_FILE), exist_ok=True)
+        with open(WINNERS_FILE, 'w', encoding='utf-8') as file:
+            json.dump(winners_data, file, indent=2, ensure_ascii=False)
         return True
     except Exception:
         return False
@@ -274,7 +295,29 @@ def health_check():
     """Endpoint para verificar se a API está funcionando"""
     return jsonify({"status": "API funcionando!", "timestamp": datetime.now().isoformat()}), 200
 
-# Rotas para servir o frontend React
+@app.route('/api/winners', methods=['GET'])
+def get_winners():
+    """Obter ganhadores atuais"""
+    winners = load_winners()
+    print(f"DEBUG: Retornando ganhadores: {winners}")
+    return jsonify(winners)
+
+@app.route('/api/winners', methods=['POST'])
+def set_winners():
+    """Atualizar ganhadores"""
+    try:
+        data = request.get_json()
+        print(f"DEBUG: Recebendo ganhadores: {data}")
+        if save_winners(data):
+            print("DEBUG: Ganhadores salvos com sucesso")
+            return jsonify({"success": True})
+        else:
+            print("DEBUG: Erro ao salvar ganhadores")
+            return jsonify({"success": False}), 500
+    except Exception as e:
+        print(f"DEBUG: Erro: {e}")
+        return jsonify({"success": False}), 400
+
 @app.route('/')
 def serve_react_app():
     """Serve a página principal do React"""
@@ -286,7 +329,6 @@ def serve_react_static(path):
     if path and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     else:
-        # Para Single Page Application, sempre retorna index.html para rotas não encontradas
         return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
@@ -297,7 +339,6 @@ if __name__ == '__main__':
     if not os.path.exists(CONFIG_FILE):
         save_config({"show_results": True})
     
-    # Configuração para produção ou desenvolvimento
     port = int(os.getenv('PORT', 5000))
     debug = os.getenv('FLASK_ENV') != 'production'
     host = '0.0.0.0'
