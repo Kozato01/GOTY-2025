@@ -1,352 +1,455 @@
-from flask import Flask, request, jsonify, send_from_directory, send_file
-from flask_cors import CORS
-import csv
-import os
+"""API do GOTY — votação, resultados e administração.
+
+Servido em produção via gunicorn (`app:app`, ver docker/Dockerfile).
+"""
+import html
 import json
+import logging
+import os
+import re
 from datetime import datetime
 
-app = Flask(__name__, static_folder='static', static_url_path='')
-CORS(app)  # Permite requisições do frontend
+from dotenv import load_dotenv
+from flask import Flask, g, jsonify, request, send_from_directory
+from flask_cors import CORS
 
-# Nome do arquivo CSV
-CSV_FILE = os.getenv('CSV_FILE', 'data/usuarios.csv')  # Permite configurar via env var
-CONFIG_FILE = 'data/config.json'
-WINNERS_FILE = 'data/winners.json'
+# ---------------------------------------------------------------------------
+# Ambiente — precisa rodar ANTES dos imports locais (auth/connect leem o .env)
+# ---------------------------------------------------------------------------
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config", ".env"))
 
-# Cabeçalhos das categorias TGA baseado no arquivo constants.ts
-CATEGORIES = [
-    "Jogo do Ano",
-    "Melhor Direção de Jogo", 
-    "Melhor Narrativa",
-    "Melhor Direção de Arte",
-    "Melhor Trilha Sonora",
-    "Melhor Design de Áudio",
-    "Melhor Atuação",
-    "Inovação em Acessibilidade",
-    "Jogos com Maior Impacto Social",
-    "Melhor Jogo Contínuo",
-    "Melhor Suporte à Comunidade",
-    "Melhor Jogo Independente",
-    "Melhor Estreia de um Estúdio Indie",
-    "Melhor Jogo Mobile",
-    "Melhor VR / AR",
-    "Melhor Jogo de Ação",
-    "Melhor Jogo de Ação / Aventura",
-    "Melhor RPG",
-    "Melhor Jogo de Luta",
-    "Melhor Jogo para Família",
-    "Melhor Jogo de Simulação / Estratégia",
-    "Melhor Jogo de Esporte / Corrida",
-    "Melhor Jogo Multiplayer",
-    "Melhor Adaptação",
-    "Jogo Mais Aguardado de 2025"
-]
+from auth import require_admin, require_google_auth
+from connect import get_repository
+from connect.base import DuplicateVoteError
 
-def ensure_csv_exists():
-    """Garante que o arquivo CSV existe com os cabeçalhos corretos"""
-    # Cria o diretório data se não existir
-    os.makedirs(os.path.dirname(CSV_FILE), exist_ok=True)
-    
-    if not os.path.exists(CSV_FILE):
-        with open(CSV_FILE, 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            headers = ['Nickname', 'Timestamp'] + CATEGORIES
-            writer.writerow(headers)
-        print(f"Arquivo {CSV_FILE} criado com cabeçalhos")
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("goty")
 
-def load_config():
-    """Carrega configuração do arquivo JSON"""
+# Silencia o log de acesso por-requisição do werkzeug (mantém só warnings/erros).
+logging.getLogger("werkzeug").setLevel(logging.WARNING)
+
+
+# O healthcheck do Docker bate em /api/health a cada 30s — fora do access log do gunicorn.
+class _HealthCheckLogFilter(logging.Filter):
+    def filter(self, record):
+        return "/api/health" not in record.getMessage()
+
+
+logging.getLogger("gunicorn.access").addFilter(_HealthCheckLogFilter())
+
+# ---------------------------------------------------------------------------
+# App, rate limiting, CORS e headers de segurança
+# ---------------------------------------------------------------------------
+app = Flask(__name__, static_folder="static", static_url_path="")
+
+# Rate limiting básico (anti-abuso). Limites aplicados por rota abaixo.
+try:
+    from flask_limiter import Limiter
+    from flask_limiter.util import get_remote_address
+
+    limiter = Limiter(get_remote_address, app=app, storage_uri="memory://")
+    _rate_limit = limiter.limit
+except ImportError:  # flask-limiter não instalado → segue sem limites (dev)
+    logger.warning("flask-limiter não instalado — rate limiting desativado")
+
+    def _rate_limit(_spec):
+        def decorator(fn):
+            return fn
+        return decorator
+
+# CORS restrito às origens conhecidas (dev) + configurável por env em produção
+_default_origins = "http://localhost:3000,http://localhost:5000,http://127.0.0.1:3000,http://127.0.0.1:5000"
+_allowed_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", _default_origins).split(",") if o.strip()]
+CORS(app, origins=_allowed_origins)
+
+
+# Headers de segurança em todas as respostas (anti-MIME-sniffing/clickjacking)
+@app.after_request
+def set_security_headers(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+    if os.getenv("FLASK_ENV") == "production":
+        response.headers.setdefault(
+            "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+        )
+    return response
+
+
+# ---------------------------------------------------------------------------
+# Repositório de votos e caminhos de dados
+# ---------------------------------------------------------------------------
+# Inicializa o repositório de votos conforme DB_BACKEND no .env
+repo = get_repository()
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+CONFIG_FILE = os.path.join(DATA_DIR, "config.json")
+WINNERS_FILE = os.path.join(DATA_DIR, "winners.json")
+CATEGORIES_FILE = os.path.join(DATA_DIR, "categories.json")
+GAME_IMAGES_FILE = os.path.join(DATA_DIR, "game-images.json")
+
+NICKNAME_MAX_LEN = 30
+PLACEHOLDER_IMAGE = "https://via.placeholder.com/600x800/1e293b/38bdf8?text=Game"
+
+
+# ---------------------------------------------------------------------------
+# Helpers — persistência JSON
+# ---------------------------------------------------------------------------
+def _read_json(path, default):
+    """Lê um JSON do disco; em arquivo ausente ou erro, retorna `default`."""
     try:
-        if os.path.exists(CONFIG_FILE):
-            with open(CONFIG_FILE, 'r', encoding='utf-8') as file:
-                return json.load(file)
-        return {"show_results": True}
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
     except Exception:
-        return {"show_results": True}
+        logger.exception("Erro ao ler %s", os.path.basename(path))
+    return default
 
-def save_config(config):
-    """Salva configuração no arquivo JSON"""
+
+def _write_json(path, data) -> bool:
     try:
-        os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
-        with open(CONFIG_FILE, 'w', encoding='utf-8') as file:
-            json.dump(config, file, indent=2, ensure_ascii=False)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
         return True
     except Exception:
+        logger.exception("Erro ao gravar %s", os.path.basename(path))
         return False
 
-def load_winners():
-    """Carrega ganhadores do arquivo JSON"""
-    try:
-        if os.path.exists(WINNERS_FILE):
-            with open(WINNERS_FILE, 'r', encoding='utf-8') as file:
-                return json.load(file)
-        return {}
-    except Exception:
-        return {}
 
-def save_winners(winners_data):
-    """Salva ganhadores no arquivo JSON"""
-    try:
-        os.makedirs(os.path.dirname(WINNERS_FILE), exist_ok=True)
-        with open(WINNERS_FILE, 'w', encoding='utf-8') as file:
-            json.dump(winners_data, file, indent=2, ensure_ascii=False)
-        return True
-    except Exception:
-        return False
+def load_config() -> dict:
+    return _read_json(CONFIG_FILE, {"show_results": True})
 
-@app.route('/api/vote', methods=['POST'])
+
+def save_config(config) -> bool:
+    return _write_json(CONFIG_FILE, config)
+
+
+def load_winners() -> dict:
+    return _read_json(WINNERS_FILE, {})
+
+
+def save_winners(winners_data) -> bool:
+    return _write_json(WINNERS_FILE, winners_data)
+
+
+# ---------------------------------------------------------------------------
+# Helpers — validação de votos
+# ---------------------------------------------------------------------------
+def sanitize_nickname(raw: str) -> str:
+    """Limpa o nickname: trim, sem HTML/control chars, tamanho limitado (anti-XSS)."""
+    if not isinstance(raw, str):
+        return ""
+    value = raw.strip()
+    value = re.sub(r"[\x00-\x1f<>]", "", value)  # remove control chars e < >
+    value = html.escape(value, quote=False)
+    return value[:NICKNAME_MAX_LEN]
+
+
+def load_categories_data() -> tuple[dict, list]:
+    """Retorna ({categoria: set(títulos válidos)}, lista crua de categorias)."""
+    try:
+        categories = _read_json(CATEGORIES_FILE, {}).get("categories", [])
+        valid = {c["name"]: {n["title"] for n in c.get("nominees", [])} for c in categories}
+        return valid, categories
+    except Exception:
+        logger.exception("Erro ao processar categories.json")
+        return {}, []
+
+
+def validate_votes(votes) -> str | None:
+    """Valida os votos contra categories.json. Retorna mensagem de erro ou None."""
+    if not isinstance(votes, dict) or not votes:
+        return "Votos inválidos ou vazios"
+    valid_map, _ = load_categories_data()
+    if not valid_map:
+        return None  # se não há categorias carregadas, não bloqueia
+    for categoria, jogo in votes.items():
+        if categoria not in valid_map:
+            return f"Categoria inválida: {categoria}"
+        if jogo not in valid_map[categoria]:
+            return f"Indicado inválido para '{categoria}': {jogo}"
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Rotas — votação (usuário autenticado via Google)
+# ---------------------------------------------------------------------------
+@app.route("/api/vote", methods=["POST"])
+@_rate_limit("10 per minute")
+@require_google_auth
 def save_vote():
-    """Endpoint para salvar um novo voto"""
     try:
-        # Recebe os dados JSON da requisição
-        data = request.get_json()
-        
+        data = request.get_json(silent=True)
         if not data:
             return jsonify({"error": "Dados não fornecidos"}), 400
-        
-        # Valida os campos obrigatórios
-        if 'nickname' not in data or 'votes' not in data:
+
+        if "nickname" not in data or "votes" not in data:
             return jsonify({"error": "Campos 'nickname' e 'votes' são obrigatórios"}), 400
-        
-        nickname = data['nickname']
-        timestamp = data.get('timestamp', datetime.now().isoformat())
-        votes = data['votes']
-        
-        # Garante que o arquivo CSV existe
-        ensure_csv_exists()
-        
-        # Prepara a linha para adicionar ao CSV
-        row = [nickname, timestamp]
-        
-        # Adiciona os votos na ordem correta das categorias
-        for category in CATEGORIES:
-            vote = votes.get(category, "")  # String vazia se não houver voto para a categoria
-            row.append(vote)
-        
-        # Adiciona a nova linha ao arquivo CSV
-        with open(CSV_FILE, 'a', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerow(row)
-        
-        print(f"Voto salvo para {nickname}")
-        return jsonify({"status": "success", "message": "Voto salvo com sucesso"}), 201
-        
-    except Exception as e:
-        print(f"Erro ao salvar voto: {str(e)}")
-        return jsonify({"error": f"Erro interno do servidor: {str(e)}"}), 500
 
-@app.route('/api/votes', methods=['GET'])
-def get_all_votes():
-    """Endpoint para obter todos os votos"""
-    try:
-        # Verifica se o arquivo existe
-        if not os.path.exists(CSV_FILE):
-            return jsonify([]), 200
-        
-        votes_list = []
-        
-        # Lê o arquivo CSV
-        with open(CSV_FILE, 'r', newline='', encoding='utf-8') as file:
-            reader = csv.DictReader(file)
-            
-            for row in reader:
-                # Constrói o objeto de voto
-                vote_obj = {
-                    "nickname": row.get('Nickname', ''),
-                    "timestamp": row.get('Timestamp', ''),
-                    "votes": {}
-                }
-                
-                # Adiciona os votos de cada categoria
-                for category in CATEGORIES:
-                    vote_value = row.get(category, '')
-                    if vote_value:  # Só adiciona se não for string vazia
-                        vote_obj["votes"][category] = vote_value
-                
-                votes_list.append(vote_obj)
-        
-        return jsonify(votes_list), 200
-        
-    except Exception as e:
-        print(f"Erro ao ler votos: {str(e)}")
-        return jsonify({"error": f"Erro interno do servidor: {str(e)}"}), 500
+        if not repo.is_available():
+            return jsonify({"error": "Backend de dados não disponível"}), 503
 
-@app.route('/api/delete', methods=['POST'])
-def delete_votes():
-    """Endpoint para deletar votos de um usuário específico"""
-    try:
-        # Tenta obter dados de diferentes formas para aceitar diversos Content-Types
-        data = None
-        
-        # Primeiro tenta JSON normal
-        if request.is_json:
-            data = request.get_json()
-        # Se não conseguir, força a leitura como JSON
-        else:
-            try:
-                data = request.get_json(force=True)
-            except:
-                # Se ainda não conseguir, tenta como form data
-                if request.form:
-                    data = request.form.to_dict()
-                # Última tentativa: dados raw
-                elif request.data:
-                    try:
-                        data = json.loads(request.data.decode('utf-8'))
-                    except:
-                        pass
-        
-        if not data:
-            return jsonify({"error": "Dados não fornecidos"}), 400
-        
-        # Obtém o nickname a ser deletado
-        nickname = data.get('nickname', '').strip()
-        
+        nickname = sanitize_nickname(data.get("nickname", ""))
         if not nickname:
-            return jsonify({"error": "Campo 'nickname' é obrigatório"}), 400
-        
-        # Verifica se o arquivo existe
-        if not os.path.exists(CSV_FILE):
-            return jsonify({"error": "Arquivo de votos não encontrado"}), 404
-        
-        # Se nickname for "all", apaga todos os votos
-        if nickname.lower() == "all":
-            # Apaga todo o conteúdo e reescreve apenas os cabeçalhos
-            with open(CSV_FILE, 'w', newline='', encoding='utf-8') as file:
-                writer = csv.writer(file)
-                headers = ['Nickname', 'Timestamp'] + CATEGORIES
-                writer.writerow(headers)
-            
-            print("Todos os votos foram apagados do arquivo CSV")
-            return jsonify({"status": "success", "message": "Todos os votos foram apagados com sucesso"}), 200
-        
-        # Caso contrário, deleta apenas o usuário específico
-        temp_rows = []
-        deleted_count = 0
-        
-        # Lê o arquivo e filtra as linhas
-        with open(CSV_FILE, 'r', newline='', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            headers = next(reader)  # Lê o cabeçalho
-            temp_rows.append(headers)
-            
-            for row in reader:
-                if len(row) > 0 and row[0].strip().lower() != nickname.lower():
-                    temp_rows.append(row)
-                else:
-                    deleted_count += 1
-        
-        # Reescreve o arquivo sem as linhas do usuário especificado
-        with open(CSV_FILE, 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerows(temp_rows)
-        
-        if deleted_count > 0:
-            print(f"Deletados {deleted_count} voto(s) do usuário '{nickname}'")
-            return jsonify({
-                "status": "success", 
-                "message": f"Deletados {deleted_count} voto(s) do usuário '{nickname}'"
-            }), 200
-        else:
-            return jsonify({
-                "status": "info", 
-                "message": f"Nenhum voto encontrado para o usuário '{nickname}'"
-            }), 404
-        
-    except Exception as e:
-        print(f"Erro ao deletar votos: {str(e)}")
-        return jsonify({"error": f"Erro interno do servidor: {str(e)}"}), 500
+            return jsonify({"error": "Nickname inválido"}), 400
 
-@app.route('/api/config', methods=['GET'])
+        votes = data["votes"]
+        err = validate_votes(votes)
+        if err:
+            return jsonify({"error": err}), 400
+
+        # Identidade vem do token Google (g.voter_id), nunca do body.
+        timestamp = datetime.now().isoformat()
+        result = repo.save_vote(g.voter_id, nickname, timestamp, votes)
+        return jsonify(result), 201
+
+    except DuplicateVoteError:
+        return jsonify({"error": "Você já votou. Cada pessoa pode votar apenas uma vez."}), 409
+    except Exception:
+        logger.exception("Erro ao salvar voto")
+        return jsonify({"error": "Erro interno do servidor"}), 500
+
+
+@app.route("/api/me", methods=["GET"])
+@require_google_auth
+def get_my_vote():
+    """Retorna o voto do usuário logado ({nickname, votes, timestamp}) ou 404.
+
+    Permite ao frontend detectar usuário recorrente: quem já votou não
+    redigita o nickname — vai direto aos resultados.
+    """
+    try:
+        if not repo.is_available():
+            return jsonify({"error": "Backend de dados não disponível"}), 503
+        vote = repo.get_vote(g.voter_id)
+        if vote:
+            return jsonify(vote), 200
+        return jsonify({"error": "Nenhum voto encontrado"}), 404
+    except Exception:
+        logger.exception("Erro ao buscar voto do usuário")
+        return jsonify({"error": "Erro interno do servidor"}), 500
+
+
+@app.route("/api/me", methods=["DELETE"])
+@_rate_limit("10 per minute")
+@require_google_auth
+def delete_my_vote():
+    """LGPD — direito de exclusão: o usuário logado apaga o próprio voto."""
+    try:
+        if not repo.is_available():
+            return jsonify({"error": "Backend de dados não disponível"}), 503
+        count = repo.delete_vote(g.voter_id)
+        if count > 0:
+            return jsonify({"status": "success", "message": "Seu voto foi apagado"}), 200
+        return jsonify({"status": "info", "message": "Nenhum voto encontrado"}), 404
+    except Exception:
+        logger.exception("Erro ao apagar voto do usuário")
+        return jsonify({"error": "Erro interno do servidor"}), 500
+
+
+# ---------------------------------------------------------------------------
+# Rotas — leitura pública (resultados, vencedores, categorias)
+# ---------------------------------------------------------------------------
+@app.route("/api/votes", methods=["GET"])
+def get_all_votes():
+    try:
+        votes_list = repo.get_all_votes()
+        logger.info("%d votos retornados", len(votes_list))
+        return jsonify(votes_list), 200
+    except Exception:
+        logger.exception("Erro ao ler votos")
+        return jsonify({"error": "Erro interno do servidor"}), 500
+
+
+@app.route("/api/results", methods=["GET"])
+def get_results():
+    """Resultados agregados (sem votos crus) + ranking de pontos calculado no servidor."""
+    try:
+        results = repo.get_results()
+        winners = load_winners()
+        _, categories = load_categories_data()
+        points_by_cat = {c["name"]: c.get("points", 0) for c in categories}
+
+        # Ranking: cruza cada voto com os vencedores reais.
+        ranking = []
+        if winners:
+            for v in repo.get_all_votes():
+                score = sum(
+                    points_by_cat.get(cat, 0)
+                    for cat, jogo in (v.get("votes") or {}).items()
+                    if winners.get(cat) == jogo
+                )
+                ranking.append({"nickname": v.get("nickname", ""), "score": score})
+            ranking.sort(key=lambda r: r["score"], reverse=True)
+
+        results["ranking"] = ranking
+        return jsonify(results), 200
+    except Exception:
+        logger.exception("Erro ao calcular resultados")
+        return jsonify({"error": "Erro interno do servidor"}), 500
+
+
+@app.route("/api/winners", methods=["GET"])
+def get_winners():
+    return jsonify(load_winners())
+
+
+@app.route("/api/categories")
+def get_categories():
+    try:
+        data = _read_json(CATEGORIES_FILE, None)
+        if data is None:
+            return jsonify({"error": "Erro ao carregar categorias"}), 500
+
+        game_images = _read_json(GAME_IMAGES_FILE, {})
+        for category in data.get("categories", []):
+            for nominee in category.get("nominees", []):
+                nominee["imageUrl"] = game_images.get(nominee["title"], PLACEHOLDER_IMAGE)
+
+        return jsonify(data)
+    except Exception:
+        logger.exception("Erro ao carregar categories.json")
+        return jsonify({"error": "Erro ao carregar categorias"}), 500
+
+
+# ---------------------------------------------------------------------------
+# Rotas — administração
+# ---------------------------------------------------------------------------
+@app.route("/api/delete", methods=["POST"])
+@require_admin
+def delete_votes():
+    """Admin — reset da base. Body: {"nickname": "all"}."""
+    try:
+        data = request.get_json(silent=True) or {}
+        target = str(data.get("nickname", "")).strip().lower()
+        if not repo.is_available():
+            return jsonify({"error": "Backend de dados não disponível"}), 503
+
+        if target == "all":
+            count = repo.delete_all_votes()
+            return jsonify({"status": "success", "message": f"Todos os {count} votos foram apagados"}), 200
+
+        return jsonify({"error": "Use {\"nickname\": \"all\"} para resetar a base"}), 400
+    except Exception:
+        logger.exception("Erro ao deletar votos")
+        return jsonify({"error": "Erro interno do servidor"}), 500
+
+
+@app.route("/api/toggle-results", methods=["POST"])
+@require_admin
+def toggle_results():
+    try:
+        config = load_config()
+        new_state = not config.get("show_results", True)
+        config["show_results"] = new_state
+        if save_config(config):
+            return jsonify({"status": "success", "show_results": new_state}), 200
+        return jsonify({"error": "Erro ao salvar configuração"}), 500
+    except Exception:
+        logger.exception("Erro ao alternar resultados")
+        return jsonify({"error": "Erro interno do servidor"}), 500
+
+
+@app.route("/api/winners", methods=["POST"])
+@require_admin
+def set_winners():
+    try:
+        data = request.get_json()
+        if save_winners(data):
+            return jsonify({"success": True})
+        return jsonify({"success": False}), 500
+    except Exception:
+        logger.exception("Erro ao salvar vencedores")
+        return jsonify({"success": False}), 400
+
+
+# ---------------------------------------------------------------------------
+# Rotas — configuração e status
+# ---------------------------------------------------------------------------
+@app.route("/api/config", methods=["GET"])
 def get_config():
-    """Retorna configurações da aplicação"""
     try:
         config = load_config()
         return jsonify({
-            'status': 'success',
-            'config': {
-                'showResults': config.get('show_results', True)
-            }
+            "status": "success",
+            "config": {
+                "showResults": config.get("show_results", True),
+                "backendType": os.getenv("DB_BACKEND", "firestore"),
+                "backendAvailable": repo.is_available(),
+            },
         }), 200
-    except Exception as e:
-        return jsonify({"error": f"Erro interno do servidor: {str(e)}"}), 500
+    except Exception:
+        logger.exception("Erro ao obter configuração")
+        return jsonify({"error": "Erro interno do servidor"}), 500
 
-@app.route('/api/toggle-results', methods=['POST'])
-def toggle_results():
-    """Liga ou desliga a exibição dos resultados"""
+
+@app.route("/api/db-status", methods=["GET"])
+def db_status():
     try:
-        config = load_config()
-        current_state = config.get('show_results', True)
-        new_state = not current_state
-        config['show_results'] = new_state
-        
-        if save_config(config):
-            return jsonify({
-                'status': 'success',
-                'show_results': new_state
-            }), 200
+        backend = os.getenv("DB_BACKEND", "firestore")
+        available = repo.is_available()
+        status_info = {
+            "backend": backend,
+            "available": available,
+            "status": f"✅ {backend} conectado" if available else f"❌ {backend} não disponível",
+        }
+        if available:
+            try:
+                votes = repo.get_all_votes()
+                status_info["documents_count"] = len(votes)
+            except Exception:
+                status_info["documents_count"] = 0
         else:
-            return jsonify({'error': 'Erro ao salvar configuração'}), 500
-    except Exception as e:
-        return jsonify({"error": f"Erro interno do servidor: {str(e)}"}), 500
+            status_info["documents_count"] = 0
+        return jsonify(status_info), 200
+    except Exception:
+        logger.exception("Erro no db-status")
+        return jsonify({"error": "Erro interno do servidor"}), 500
 
-@app.route('/api/health', methods=['GET'])
+
+@app.route("/api/health", methods=["GET"])
 def health_check():
-    """Endpoint para verificar se a API está funcionando"""
     return jsonify({"status": "API funcionando!", "timestamp": datetime.now().isoformat()}), 200
 
-@app.route('/api/winners', methods=['GET'])
-def get_winners():
-    """Obter ganhadores atuais"""
-    winners = load_winners()
-    print(f"DEBUG: Retornando ganhadores: {winners}")
-    return jsonify(winners)
 
-@app.route('/api/winners', methods=['POST'])
-def set_winners():
-    """Atualizar ganhadores"""
-    try:
-        data = request.get_json()
-        print(f"DEBUG: Recebendo ganhadores: {data}")
-        if save_winners(data):
-            print("DEBUG: Ganhadores salvos com sucesso")
-            return jsonify({"success": True})
-        else:
-            print("DEBUG: Erro ao salvar ganhadores")
-            return jsonify({"success": False}), 500
-    except Exception as e:
-        print(f"DEBUG: Erro: {e}")
-        return jsonify({"success": False}), 400
-
-@app.route('/')
+# ---------------------------------------------------------------------------
+# SPA — serve o build do React (backend/static)
+# ---------------------------------------------------------------------------
+@app.route("/")
 def serve_react_app():
-    """Serve a página principal do React"""
-    return send_from_directory(app.static_folder, 'index.html')
+    return send_from_directory(app.static_folder, "index.html")
 
-@app.route('/<path:path>')
+
+@app.route("/<path:path>")
 def serve_react_static(path):
-    """Serve arquivos estáticos do React"""
     if path and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
+    return send_from_directory(app.static_folder, "index.html")
 
-if __name__ == '__main__':
-    print("Iniciando servidor Flask...")
-    print("Categorias configuradas:", len(CATEGORIES))
-    ensure_csv_exists()
-    
+
+# ---------------------------------------------------------------------------
+# Execução direta (dev) — em produção o gunicorn importa `app` diretamente
+# ---------------------------------------------------------------------------
+if __name__ == "__main__":
+    logger.info("Iniciando servidor Flask...")
+    logger.info("Backend de dados: %s", os.getenv("DB_BACKEND", "firestore"))
+
     if not os.path.exists(CONFIG_FILE):
         save_config({"show_results": True})
-    
-    port = int(os.getenv('PORT', 5000))
-    debug = os.getenv('FLASK_ENV') != 'production'
-    host = '0.0.0.0'
-    
-    print(f"Servidor rodando em http://{host}:{port}")
-    if not debug:
-        print("Modo: PRODUÇÃO")
-    else:
-        print("Modo: DESENVOLVIMENTO")
-    
+
+    port = int(os.getenv("PORT", 5000))
+    debug = os.getenv("FLASK_ENV") != "production"
+    host = "0.0.0.0"
+
+    logger.info("Servidor rodando em http://%s:%s", host, port)
+    logger.info("Modo: %s", "PRODUÇÃO" if not debug else "DESENVOLVIMENTO")
     app.run(debug=debug, host=host, port=port)

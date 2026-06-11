@@ -1,8 +1,14 @@
+export interface Game {
+  id: string;
+  title: string;
+  imageUrl: string;
+}
+
 export interface Category {
   id: number;
   name: string;
   points: number;
-  options: string[];
+  nominees: Game[];
 }
 
 export interface UserVote {

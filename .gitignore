@@ -6,12 +6,22 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+PLAN.md
 
 node_modules
 dist
 dist-ssr
 *.local
+.vite/
 
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+./.gitignore
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -23,3 +33,16 @@ dist-ssr
 *.sln
 *.sw?
 
+# Segredos e credenciais — NUNCA versionar (LGPD/segurança)
+.env
+.env.*
+!.env.example
+config/.env
+**/credentials/
+*-key.json
+service-account*.json
+firestore-key.json
+
+# Banco local / dados sensíveis de dev
+backend/data/usuarios.csv
+API.md

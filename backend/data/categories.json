@@ -1,0 +1,66 @@
+{
+  "_comment": "IMPORTANTE: O campo 'title' de cada nominee deve corresponder EXATAMENTE ao nome no arquivo 'game-images.json'. O backend faz o merge automático e adiciona o 'imageUrl' baseado no nome do jogo. Para adicionar um novo jogo: 1) Adicione o nome e URL em 'game-images.json', 2) Use o mesmo nome exato aqui no 'title'",
+  "categories": [
+    {
+      "id": 1,
+      "name": "Jogo do Ano",
+      "points": 10,
+      "nominees": [
+        { "id": "g1", "title": "Clair Obscur: Expedition 33" },
+        { "id": "g2", "title": "Death Stranding 2: On the Beach" },
+        { "id": "g3", "title": "Donkey Kong Bananza" },
+        { "id": "g4", "title": "Hades 2" },
+        { "id": "g5", "title": "Hollow Knight: Silksong" },
+        { "id": "g6", "title": "Kingdom Come: Deliverance 2" }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Melhor Direção",
+      "points": 5,
+      "nominees": [
+        { "id": "g1", "title": "Clair Obscur: Expedition 33" },
+        { "id": "g2", "title": "Death Stranding 2: On the Beach" },
+        { "id": "g7", "title": "Ghost of Yotei" },
+        { "id": "g4", "title": "Hades 2" },
+        { "id": "g8", "title": "Split Fiction" }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Melhor Narrativa",
+      "points": 5,
+      "nominees": [
+        { "id": "g1", "title": "Clair Obscur: Expedition 33" },
+        { "id": "g2", "title": "Death Stranding 2: On the Beach" },
+        { "id": "g7", "title": "Ghost of Yotei" },
+        { "id": "g6", "title": "Kingdom Come: Deliverance 2" },
+        { "id": "g9", "title": "Silent Hill f" }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Melhor Direção de Arte",
+      "points": 5,
+      "nominees": [
+        { "id": "g1", "title": "Clair Obscur: Expedition 33" },
+        { "id": "g2", "title": "Death Stranding 2: On the Beach" },
+        { "id": "g7", "title": "Ghost of Yotei" },
+        { "id": "g4", "title": "Hades 2" },
+        { "id": "g5", "title": "Hollow Knight: Silksong" }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Melhor Direção de Arte",
+      "points": 5,
+      "nominees": [
+        { "id": "g1", "title": "Clair Obscur: Expedition 33" },
+        { "id": "g2", "title": "Death Stranding 2: On the Beach" },
+        { "id": "g7", "title": "Ghost of Yotei" },
+        { "id": "g4", "title": "Hades 2" },
+        { "id": "g5", "title": "Hollow Knight: Silksong" }
+      ]
+    }
+  ]
+}

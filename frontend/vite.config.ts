@@ -18,8 +18,11 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react()],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        // Só o Client ID (público por natureza) vai pro bundle — nunca segredos.
+        // Fallback para env do processo (build em Docker/CI sem config/.env).
+        'process.env.GOOGLE_CLIENT_ID': JSON.stringify(
+          env.VITE_GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || ''
+        )
       },
       resolve: {
         alias: {
