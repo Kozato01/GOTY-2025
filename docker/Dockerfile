@@ -1,58 +1,53 @@
-# Multi-stage Dockerfile para TGA 2025 GOAT Vote
+# Multi-stage Dockerfile para GOTY Vote 2026
 # Stage 1: Build do frontend React
-FROM node:18-alpine AS frontend-builder
+FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app
 
-# Instala dependências de build para Alpine
-RUN apk add --no-cache python3 make g++
+# Client ID do Google (público por natureza) — necessário no BUILD do frontend.
+# Passe via: docker compose --env-file ../config/.env build
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
 
 # Copia arquivos de dependências do frontend
 COPY frontend/package.json frontend/package-lock.json* ./
 
 # Instala dependências
-RUN npm install
+RUN npm ci
 
 # Copia código fonte do frontend
 COPY frontend/ .
 
-# Build do frontend
+# Build do frontend (vite.config lê VITE_GOOGLE_CLIENT_ID do ambiente)
 RUN npm run build
 
-# Stage 2: Servidor Python Flask + frontend buildado
+# Stage 2: Servidor Python Flask (gunicorn) + frontend buildado
 FROM python:3.11-slim
 
 WORKDIR /app
-
-# Instala dependências do sistema (curl não é mais necessário sem health check)
-RUN apt-get update && apt-get install -y \
-    && rm -rf /var/lib/apt/lists/*
 
 # Copia requirements e instala dependências Python
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copia todo o backend (incluindo a pasta data)
+# Segredos NÃO entram na imagem: config/.env via env_file e
+# credentials/ via volume read-only (ver docker-compose.yml)
 COPY backend/ ./
 
 # Copia os arquivos buildados do React
 COPY --from=frontend-builder /app/dist ./static
 
-# Garante que a pasta data existe (já deve existir pelo COPY acima)
+# Garante que a pasta data existe (o CsvRepository cria/repara o CSV sozinho)
 RUN mkdir -p data
 
-# Se o arquivo CSV não existir, cria um inicial
-RUN if [ ! -f ./data/usuarios.csv ]; then \
-    echo "nickname,categoria,opcao,pontos,timestamp" > ./data/usuarios.csv; \
-    fi
-
-# Variáveis de ambiente
-ENV FLASK_APP=app.py
+# Variáveis de ambiente (as demais — DB_BACKEND, GOOGLE_CLIENT_ID,
+# VOTER_HASH_SECRET, ADMIN_VOTER_IDS, CORS_ORIGINS — vêm do env_file)
 ENV FLASK_ENV=production
 ENV PORT=8080
 
 # Expõe a porta
 EXPOSE 8080
 
-# Comando para iniciar o servidor
-CMD ["python", "app.py"]
+# Produção: gunicorn (sem servidor de dev do Flask)
+CMD ["sh", "-c", "gunicorn -w 4 -b 0.0.0.0:${PORT:-8080} --access-logfile - app:app"]

@@ -1,25 +1,33 @@
-version: '3.8'
-
 services:
   app:
-    build: 
+    build:
       context: ..  # Contexto na raiz do projeto
       dockerfile: docker/Dockerfile
+      args:
+        # Lido do --env-file (use: docker compose --env-file ../config/.env up --build)
+        - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
     ports:
       - "8080:8080"
+    # Segredos/configuração de runtime (GOOGLE_CLIENT_ID, VOTER_HASH_SECRET,
+    # ADMIN_VOTER_IDS, DB_BACKEND, CORS_ORIGINS, PG_*) — nunca na imagem.
+    env_file:
+      - ../config/.env
     environment:
       - FLASK_ENV=production
       - PORT=8080
+      # Dentro do container a credencial fica no mount abaixo
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/firestore-key.json
     volumes:
-      # Volume específico para dados persistentes (alinhado com Dockerfile)
+      # Dados persistentes (CSV/config/winners) fora do container
       - ../backend/data:/app/data
-      # Volume para logs se necessário
-      - app-logs:/app/logs
+      # Service account do Firestore — somente leitura, nunca na imagem
+      - ../backend/credentials:/app/credentials:ro
     restart: unless-stopped
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      # python em vez de curl (não instalado na imagem slim)
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/api/health', timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -28,7 +36,3 @@ services:
 networks:
   app-network:
     driver: bridge
-
-volumes:
-  app-logs:
-    driver: local
