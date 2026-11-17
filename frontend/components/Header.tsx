@@ -5,6 +5,7 @@ interface HeaderProps {
   currentView: View;
   onNavigate: (view: View) => void;
   hasVotes: boolean;
+  resultsVisible: boolean;
   currentUser?: string;
   onLogout?: () => void;
 }
@@ -17,8 +18,11 @@ const allNavItems: { view: View; label: string }[] = [
   { view: 'winners', label: 'Ganhadores' },
 ];
 
-const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, currentUser, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, resultsVisible, currentUser, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navItems = resultsVisible
+    ? allNavItems
+    : allNavItems.filter(i => i.view !== 'results' && i.view !== 'winners');
 
   const handleNavigate = (view: View) => {
     onNavigate(view);
@@ -40,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, currentUser, o
         </button>
 
         <nav className="hidden md:flex items-center gap-7" aria-label="Principal">
-          {allNavItems.map(({ view, label }) => {
+          {navItems.map(({ view, label }) => {
             const active = currentView === view;
             return (
               <button
@@ -92,7 +96,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, currentUser, o
             className="md:hidden absolute right-0 left-0 top-full z-50 bg-velvet border border-velvet-line shadow-[0_16px_32px_rgba(0,0,0,0.6)] animate-fadeIn"
             aria-label="Principal"
           >
-            {allNavItems.map(({ view, label }) => (
+            {navItems.map(({ view, label }) => (
               <button
                 key={view}
                 onClick={() => handleNavigate(view)}

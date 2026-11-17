@@ -23,9 +23,15 @@ const App: React.FC = () => {
   const [allVotes, setAllVotes] = useState<UserVote[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
+  // show_results (backend/data/config.json) esconde Resultados e Ganhadores até a cerimônia.
+  const [resultsVisible, setResultsVisible] = useState(false);
+
   useEffect(() => {
     loadCategories().then(cats => setCategories(cats));
     loadVotesFromApi();
+    ApiService.getConfig()
+      .then(r => setResultsVisible(Boolean(r.config.showResults)))
+      .catch(() => setResultsVisible(false));
   }, []);
 
   const loadVotesFromApi = async () => {
@@ -152,7 +158,7 @@ const App: React.FC = () => {
       case 'voters':
         return <VotersScreen allVotes={allVotes} categories={categories} />;
       case 'winners':
-        return <WinnersScreen />;
+        return resultsVisible ? <WinnersScreen /> : <ResultsScreen allVotes={allVotes} categories={categories} />;
       case 'privacy':
         return <PrivacyScreen onBack={() => handleNavigate('intro')} />;
       case 'intro':
@@ -177,6 +183,7 @@ const App: React.FC = () => {
           currentView={view}
           onNavigate={handleNavigate}
           hasVotes={allVotes.length > 0}
+          resultsVisible={resultsVisible}
           currentUser={currentUser}
           onLogout={handleLogout}
         />
