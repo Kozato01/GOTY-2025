@@ -8,7 +8,7 @@ const TTL_STABLE = 30_000;    // config/vencedores (mudam raramente)
 
 export const API_BASE_URL = process.env.NODE_ENV === 'production'
   ? window.location.origin  // Em produção/Docker, usa a mesma URL do site
-  : 'http://localhost:5000'; // Em desenvolvimento, usa o servidor Flask separado
+  : 'http://localhost:8080'; // Em desenvolvimento, backend roda via docker compose (porta 8080)
 
 // Monta headers incluindo o ID token do Google quando logado.
 function authHeaders(json = true): Record<string, string> {

@@ -1,10 +1,10 @@
 #!/bin/bash
 # Script para build e execução do Docker
-# Rodar de dentro da pasta docker/
+# Rodar da raiz do projeto
 
 set -e
 
-ENV_FILE="../config/.env"
+ENV_FILE="config/.env"
 
 echo "🐳 GOTY VOTE 2026 - Docker Build & Run"
 echo "======================================"
@@ -25,10 +25,10 @@ docker compose --env-file "$ENV_FILE" up -d
 
 echo ""
 echo "✅ Container iniciado com sucesso!"
-echo "🌐 Aplicação disponível em: http://localhost:8080"
+echo "🌐 Aplicação disponível em: http://localhost:8020"
 echo ""
 echo "📊 Comandos úteis:"
-echo "   docker compose logs -f    # Ver logs"
-echo "   docker compose stop       # Parar container"
-echo "   docker compose down       # Parar e remover container"
-echo "   docker compose restart    # Reiniciar container"
+echo "   docker compose --env-file $ENV_FILE logs -f    # Ver logs"
+echo "   docker compose --env-file $ENV_FILE stop       # Parar container"
+echo "   docker compose --env-file $ENV_FILE down       # Parar e remover container"
+echo "   docker compose --env-file $ENV_FILE restart    # Reiniciar container"

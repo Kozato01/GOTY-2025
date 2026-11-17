@@ -1,0 +1,67 @@
+# Nome explícito do projeto — evita colisão com outros stacks num servidor
+# compartilhado que também tenham uma pasta chamada "docker".
+name: goty
+
+services:
+  postgres-goty:
+    image: postgres:16-alpine
+    container_name: postgres-goty
+    environment:
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASSWORD}
+      - POSTGRES_DB=${PG_DATABASE}
+    volumes:
+      - pgdata_goty:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER} -d ${PG_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .  # Contexto na raiz do projeto
+      dockerfile: docker/Dockerfile
+      args:
+        # Lido do --env-file (use: docker compose --env-file config/.env up --build)
+        - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+    container_name: goty-app
+    ports:
+      # Host 8020 → é a porta que o cloudflared (network_mode: host, no outro
+      # projeto) vai apontar via localhost:8020 no ingress do túnel "goty".
+      - "8020:8080"
+    # Segredos/configuração de runtime (GOOGLE_CLIENT_ID, VOTER_HASH_SECRET,
+    # ADMIN_VOTER_IDS, DB_BACKEND, CORS_ORIGINS, PG_*) — nunca na imagem.
+    env_file:
+      - config/.env
+    environment:
+      - FLASK_ENV=production
+      - PORT=8080
+      # Sobrescreve PG_HOST do .env: dentro da rede docker o host é o nome do serviço
+      - PG_HOST=postgres-goty
+    volumes:
+      # Dados persistentes (CSV/config/winners) fora do container
+      - ./backend/data:/app/data
+    restart: unless-stopped
+    depends_on:
+      postgres-goty:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      # python em vez de curl (não instalado na imagem slim)
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/api/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  pgdata_goty:
+
+networks:
+  app-network:
+    driver: bridge

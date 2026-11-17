@@ -60,7 +60,7 @@ export function renderGoogleButton(el: HTMLElement) {
   window.google.accounts.id.renderButton(el, {
     theme: 'filled_black',
     size: 'large',
-    shape: 'pill',
+    shape: 'rectangular',
     text: 'signin_with',
     locale: 'pt-BR',
   });

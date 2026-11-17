@@ -5,15 +5,11 @@ from .base import VoteRepository
 def get_repository() -> VoteRepository:
     """
     Factory que retorna o repositório de votos conforme DB_BACKEND no .env.
-    Valores aceitos: firestore | csv | postgres
+    Valores aceitos: csv | postgres
     """
-    backend = os.getenv("DB_BACKEND", "firestore").lower()
+    backend = os.getenv("DB_BACKEND", "postgres").lower()
 
-    if backend == "firestore":
-        from .db_firestore import FirestoreRepository
-        return FirestoreRepository()
-
-    elif backend == "csv":
+    if backend == "csv":
         from .db_csv import CsvRepository
         return CsvRepository()
 
@@ -23,5 +19,5 @@ def get_repository() -> VoteRepository:
 
     else:
         raise ValueError(
-            f"DB_BACKEND desconhecido: '{backend}'. Use: firestore | csv | postgres"
+            f"DB_BACKEND desconhecido: '{backend}'. Use: csv | postgres"
         )

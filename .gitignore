@@ -21,7 +21,6 @@ __pycache__/
 venv/
 .pytest_cache/
 
-./.gitignore
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -42,7 +41,15 @@ config/.env
 *-key.json
 service-account*.json
 firestore-key.json
+client_secret*.json
 
 # Banco local / dados sensíveis de dev
 backend/data/usuarios.csv
 API.md
+
+# Build da SPA (gerado pelo vite, servido pelo Flask)
+backend/static/
+# Impeccable: rascunhos e capturas locais
+.impeccable/mocks/
+.impeccable/review/
+.impeccable/tmp/

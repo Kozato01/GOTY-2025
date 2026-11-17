@@ -8,11 +8,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "backend": "C:/Python314/python.exe ../backend/app.py",
-    "docker:build": "cd ../docker && docker-compose build",
-    "docker:up": "cd ../docker && docker-compose up -d",
-    "docker:dev": "cd ../docker && docker-compose up --build",
-    "docker:down": "cd ../docker && docker-compose down",
-    "docker:logs": "cd ../docker && docker-compose logs -f"
+    "docker:build": "cd .. && docker compose --env-file config/.env build",
+    "docker:up": "cd .. && docker compose --env-file config/.env up -d",
+    "docker:dev": "cd .. && docker compose --env-file config/.env up --build",
+    "docker:down": "cd .. && docker compose down",
+    "docker:logs": "cd .. && docker compose logs -f"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

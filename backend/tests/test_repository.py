@@ -1,6 +1,6 @@
 """Teste de contrato compartilhado dos backends de dados (Fase 2.2).
 
-Roda a MESMA suíte nos 3 backends (csv / firestore / postgres) garantindo que
+Roda a MESMA suíte nos 2 backends (csv / postgres) garantindo que
 trocar o DB_BACKEND não quebra nada. Backends sem credencial/conexão no
 ambiente de teste são automaticamente pulados (skip).
 
@@ -28,12 +28,6 @@ def _make_csv(tmp_path):
     return CsvRepository()
 
 
-def _make_firestore(_tmp_path):
-    from connect.db_firestore import FirestoreRepository
-
-    return FirestoreRepository()
-
-
 def _make_postgres(_tmp_path):
     from connect.db_postgres import PostgresRepository
 
@@ -42,7 +36,6 @@ def _make_postgres(_tmp_path):
 
 FACTORIES = {
     "csv": _make_csv,
-    "firestore": _make_firestore,
     "postgres": _make_postgres,
 }
 

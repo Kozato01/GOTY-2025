@@ -1,0 +1,40 @@
+# Reduz o contexto enviado ao daemon no build (o contexto é a raiz do projeto)
+.git
+.gitignore
+.venv
+venv
+__pycache__
+**/__pycache__
+.pytest_cache
+.vscode
+.claude
+.idea
+
+# Dependências pesadas — reinstaladas dentro do container
+frontend/node_modules
+node_modules
+
+# Builds locais — regenerados no stage 1 do Dockerfile
+frontend/dist
+backend/static
+
+# Segredos — nunca vão nem pro contexto, nem pra imagem
+config/.env
+.env
+.env.*
+**/credentials/
+*-key.json
+service-account*.json
+client_secret*.json
+
+# Dados sensíveis/dev
+backend/data/usuarios.csv
+
+# Docs e scripts locais
+README.md
+API.md
+PRIVACY.md
+plan.md
+docker-compose.yml
+docker-run.bat
+docker-run.sh

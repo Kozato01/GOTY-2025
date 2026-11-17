@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { UserVote, Category } from '../types';
 import { initGoogleAuth, renderGoogleButton, isConfigured, getProfile, GoogleProfile } from '../services/auth';
 import { ApiService } from '../services/api';
+import { CheckCircleIcon, RefreshIcon, PlusIcon } from './icons';
 
 interface IntroScreenProps {
   onStart: (nickname: string) => void;
@@ -32,12 +33,6 @@ function useCountdown(target: Date) {
   }, []);
   return time;
 }
-
-const GitHubIcon = () => (
-  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
-  </svg>
-);
 
 const IntroScreen: React.FC<IntroScreenProps> = ({ onStart, onReturningUser, initialNickname, error, allVotes, categories }) => {
   // Sessão fica em memória no services/auth — ao voltar pra home continua logado.
@@ -115,143 +110,125 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStart, onReturningUser, ini
     if (event.key === 'Enter' && canStart) onStart(nickname);
   };
 
-  const totalVotesComputed = allVotes.reduce((acc, v) => acc + Object.keys(v.votes).length, 0);
   const totalCategories = categories.length;
   const maxPoints = categories.reduce((acc, c) => acc + c.points, 0);
 
-  const pad = (n: number) => String(n).padStart(2, '0');
+
+  const stats = [
+    { value: allVotes.length, label: 'Participantes' },
+    { value: totalCategories, label: 'Categorias' },
+    { value: maxPoints, label: 'Pontos em jogo' },
+  ];
 
   return (
-    <div className="flex flex-col items-center justify-center text-center animate-fadeIn gap-6">
+    <div className="flex flex-col items-center text-center gap-12 sm:gap-16">
 
-      {/* Hero */}
-      <div className="w-full p-8 sm:p-12 bg-[#100720]/90 backdrop-blur-sm border-2 border-violet-600/60 rounded-2xl shadow-2xl shadow-violet-500/20">
-        <div className="mb-6">
-          <svg className="mx-auto w-20 h-20 text-violet-400 drop-shadow-[0_0_20px_rgba(139,92,246,0.6)]" viewBox="0 0 24 24" fill="none">
-            <path d="M6 5h12M6 5c-1 0-2 1-2 2v2c0 2 1 3 2 3M6 5V3h12v2M18 5c1 0 2 1 2 2v2c0 2-1 3-2 3M6 12c0 3 3 5 6 5s6-2 6-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M12 17v3m-3 0h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M12 9l.5 1.5h1.5l-1.2.9.5 1.6-1.3-1-1.3 1 .5-1.6-1.2-.9h1.5z" fill="currentColor"/>
-          </svg>
-        </div>
+      {/* Palco: troféu sob o holofote */}
+      <section className="w-full flex flex-col items-center">
+        {/* Estatueta: o fundo escuro da foto se funde ao palco (lighten + vinheta) */}
+        <img
+          src="/brand/tga-trophy.webp"
+          alt="Estatueta do The Game Awards"
+          width={800}
+          height={800}
+          className="w-64 h-64 sm:w-96 sm:h-96 object-cover mix-blend-lighten animate-spotlight [mask-image:radial-gradient(closest-side,#000_62%,transparent)]"
+        />
+        <img src="/brand/tga-logo.svg" alt="The Game Awards" className="-mt-6 sm:-mt-10 h-7 sm:h-9 w-auto" />
 
-        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-widest leading-tight">
-          <span className="bg-gradient-to-r from-violet-300 to-violet-500 text-transparent bg-clip-text">GOTY VOTE</span>{' '}
-          <span className="bg-gradient-to-r from-amber-300 to-amber-500 text-transparent bg-clip-text">2026</span>
+        <h1 className="mt-6 font-display text-5xl sm:text-7xl lg:text-8xl uppercase leading-[0.9] text-paper text-balance">
+          GOTY Vote <span className="text-gold">2026</span>
         </h1>
-        <p className="mt-4 text-base sm:text-lg text-slate-400 font-semibold tracking-wide">
-          Bolão entre amigos · The Game Awards · 11 de Dezembro
+        <p className="mt-5 text-sm sm:text-base text-ash">
+          Bolão entre amigos · The Game Awards · 11 de dezembro
         </p>
 
-        {/* Countdown */}
-        <div className="mt-8">
+        {/* Contagem regressiva */}
+        <div className="mt-10 w-full">
           {countdown ? (
-            <div>
-              <p className="text-xs uppercase tracking-widest text-slate-500 mb-3">Contagem regressiva para a cerimônia</p>
-              <div className="flex justify-center gap-3">
-                {[
-                  { value: countdown.days,    label: 'Dias' },
-                  { value: countdown.hours,   label: 'Horas' },
-                  { value: countdown.minutes, label: 'Min' },
-                  { value: countdown.seconds, label: 'Seg' },
-                ].map(({ value, label }) => (
-                  <div key={label} className="bg-[#0f0620] border border-violet-700/50 rounded-xl px-3 py-2 min-w-[60px]">
-                    <div className="text-2xl sm:text-3xl font-black text-violet-400 tabular-nums">{pad(value)}</div>
-                    <div className="text-xs text-slate-500 uppercase tracking-wider mt-0.5">{label}</div>
+            <div role="timer" aria-label="Contagem regressiva para a cerimônia" className="flex justify-center gap-2 sm:gap-4">
+              {[
+                { v: countdown.days, l: 'Dias' },
+                { v: countdown.hours, l: 'Horas' },
+                { v: countdown.minutes, l: 'Min' },
+                { v: countdown.seconds, l: 'Seg' },
+              ].map(({ v, l }) => (
+                <div key={l} className="w-[4.5rem] sm:w-28 border border-gold/35 bg-ink/60 py-3 sm:py-5">
+                  <div className="font-display font-mono text-3xl sm:text-5xl text-gold leading-none">
+                    {String(v).padStart(2, '0')}
                   </div>
-                ))}
-              </div>
+                  <div className="mt-2 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-ash">{l}</div>
+                </div>
+              ))}
             </div>
           ) : (
-            <div className="text-amber-400 font-black text-xl tracking-widest">🏆 Cerimônia encerrada!</div>
+            <p className="font-display text-2xl sm:text-3xl uppercase text-gold">A cerimônia já aconteceu</p>
           )}
         </div>
 
-        {/* Stats */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-[#0f0620]/80 border border-violet-700/40 rounded-xl p-4">
-            <div className="text-3xl font-black text-violet-400">{allVotes.length}</div>
-            <div className="text-xs text-slate-400 uppercase tracking-widest mt-1">Participantes</div>
-          </div>
-          <div className="bg-[#0f0620]/80 border border-violet-700/40 rounded-xl p-4">
-            <div className="text-3xl font-black text-violet-400">{totalVotesComputed}</div>
-            <div className="text-xs text-slate-400 uppercase tracking-widest mt-1">Votos Computados</div>
-          </div>
-          <div className="bg-[#0f0620]/80 border border-violet-700/40 rounded-xl p-4">
-            <div className="text-3xl font-black text-violet-400">{totalCategories}</div>
-            <div className="text-xs text-slate-400 uppercase tracking-widest mt-1">Categorias</div>
-          </div>
-        </div>
-
-        {/* Login + Nickname */}
-        <div className="mt-10 w-full max-w-sm mx-auto">
+        {/* Login / estado do voto */}
+        <div className="mt-12 w-full max-w-sm">
           {!profile ? (
-            <div className="flex flex-col items-center gap-3">
-              <p className="text-sm text-slate-400">Entre com sua conta Google para votar</p>
-              <div ref={googleBtnRef} className="flex justify-center"></div>
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-sm text-paper/90">Entre com sua conta Google para votar</p>
+              <div ref={googleBtnRef} className="flex justify-center min-h-[44px]"></div>
               {!isConfigured() && (
-                <p className="text-amber-400/80 text-xs">Login Google não configurado (defina VITE_GOOGLE_CLIENT_ID).</p>
+                <p className="text-gold text-xs">Login Google não configurado (defina VITE_GOOGLE_CLIENT_ID).</p>
               )}
-              <p className="text-slate-500 text-xs leading-relaxed mt-1">
-                Garante <strong className="text-slate-400">1 voto por pessoa</strong>. Seu e-mail <strong className="text-slate-400">não é armazenado</strong>.
+              <p className="text-ash text-xs leading-relaxed">
+                Garante <strong className="text-paper/90 font-semibold">1 voto por pessoa</strong>. Seu e-mail <strong className="text-paper/90 font-semibold">não é armazenado</strong>.
               </p>
             </div>
           ) : checkingVote ? (
-            <div className="flex flex-col items-center gap-3 py-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400"></div>
-              <p className="text-sm text-slate-400">Verificando seu voto...</p>
+            <div className="flex flex-col items-center gap-3 py-4" role="status">
+              <div className="animate-spin rounded-full h-7 w-7 border-2 border-velvet-line border-t-gold"></div>
+              <p className="text-sm text-ash">Verificando seu voto…</p>
             </div>
           ) : votedNickname ? (
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-full bg-[#0f0620] border-2 border-amber-500/40 rounded-xl px-6 py-5">
-                <div className="text-amber-400 text-2xl mb-1">✓</div>
-                <p className="text-slate-200 font-bold">
-                  Voto registrado, <span className="text-amber-400">{votedNickname}</span>!
+            <div className="flex flex-col items-stretch gap-3">
+              <div className="border border-gold/40 bg-velvet px-6 py-5">
+                <CheckCircleIcon className="w-8 h-8 text-gold mx-auto" />
+                <p className="mt-2 text-paper font-semibold">
+                  Voto registrado, <span className="text-gold">{votedNickname}</span>
                 </p>
-                <p className="text-slate-400 text-sm mt-1">Agora é torcer — os vencedores saem em 11 de Dezembro.</p>
+                <p className="text-ash text-sm mt-1">Agora é torcer. Os vencedores saem em 11 de dezembro.</p>
               </div>
               <button
                 onClick={() => onReturningUser(votedNickname)}
-                className="w-full px-6 py-4 text-lg font-bold bg-gradient-to-r from-violet-600 to-amber-500 hover:from-violet-500 hover:to-amber-400 text-white rounded-xl uppercase tracking-widest shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full px-6 py-4 font-semibold bg-gold hover:bg-gold-bright text-ink uppercase tracking-[0.14em] text-sm transition-colors duration-200"
               >
-                Ver Resultados
+                Ver resultados
               </button>
 
-              {/* Refazer votação: substitui o voto antigo por um novo */}
               {!redoConfirm ? (
                 <button
                   onClick={() => setRedoConfirm(true)}
-                  className="w-full bg-[#0f0620] border-2 border-violet-700/50 hover:border-violet-500 rounded-xl px-6 py-4 flex items-center gap-4 text-left transition-all duration-300 hover:shadow-lg hover:shadow-violet-500/20 hover:scale-[1.01] active:scale-[0.99] group"
+                  className="group w-full flex items-center justify-center gap-2 px-6 py-3 text-sm text-ash hover:text-paper transition-colors"
                 >
-                  <svg className="w-8 h-8 text-violet-400 shrink-0 group-hover:rotate-180 transition-transform duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/>
-                  </svg>
-                  <span>
-                    <span className="block font-bold text-slate-200 uppercase tracking-wider text-sm">Refazer Votação</span>
-                    <span className="block text-slate-500 text-xs mt-0.5">Mudou de ideia? Apague seu voto e escolha tudo de novo.</span>
-                  </span>
+                  <RefreshIcon className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+                  Mudou de ideia? Refazer votação
                 </button>
               ) : (
-                <div className="w-full bg-[#0f0620] border border-red-700/50 rounded-xl px-5 py-4 flex flex-col gap-3 animate-fadeIn">
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Seu voto atual será <strong className="text-red-400">apagado</strong> e você fará a votação do zero. Tem certeza?
+                <div className="border border-burgundy-bright/40 bg-velvet px-5 py-4 flex flex-col gap-3 animate-fadeIn" role="alertdialog" aria-label="Confirmar refazer votação">
+                  <p className="text-paper/90 text-sm leading-relaxed">
+                    Seu voto atual será <strong className="text-burgundy-bright">apagado</strong> e você vota tudo de novo. Confirma?
                   </p>
                   <div className="flex gap-3 justify-center">
                     <button
                       onClick={handleRedoVote}
                       disabled={redoing}
-                      className="px-5 py-2 text-sm font-bold bg-red-600 hover:bg-red-500 text-white rounded-lg uppercase tracking-wider transition-all duration-200 disabled:opacity-50"
+                      className="px-5 py-2.5 text-sm font-semibold bg-burgundy hover:bg-burgundy-bright hover:text-ink text-paper uppercase tracking-wider transition-colors disabled:opacity-50"
                     >
-                      {redoing ? 'Apagando...' : 'Sim, refazer'}
+                      {redoing ? 'Apagando…' : 'Sim, refazer'}
                     </button>
                     <button
                       onClick={() => setRedoConfirm(false)}
                       disabled={redoing}
-                      className="px-5 py-2 text-sm font-bold bg-[#1a0f33] hover:bg-violet-900/40 text-slate-300 border border-violet-700/50 rounded-lg uppercase tracking-wider transition-all duration-200 disabled:opacity-50"
+                      className="px-5 py-2.5 text-sm font-semibold text-ash hover:text-paper border border-velvet-line uppercase tracking-wider transition-colors disabled:opacity-50"
                     >
                       Cancelar
                     </button>
                   </div>
-                  {redoError && <p className="text-red-400 text-sm font-medium">{redoError}</p>}
+                  {redoError && <p className="text-burgundy-bright text-sm" role="alert">{redoError}</p>}
                 </div>
               )}
             </div>
@@ -259,88 +236,72 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStart, onReturningUser, ini
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-center gap-3">
                 {profile.picture && (
-                  <img src={profile.picture} alt="" className="w-8 h-8 rounded-full border border-violet-500/50" referrerPolicy="no-referrer" />
+                  <img src={profile.picture} alt="" className="w-8 h-8 rounded-full border border-gold/50" referrerPolicy="no-referrer" />
                 )}
-                <span className="text-slate-300 text-sm">Olá, <strong className="text-white">{profile.name}</strong></span>
+                <span className="text-ash text-sm">Olá, <strong className="text-paper font-semibold">{profile.name}</strong></span>
               </div>
+              <label className="sr-only" htmlFor="nickname">Nickname</label>
               <input
+                id="nickname"
                 type="text"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Escolha seu nickname"
                 maxLength={30}
-                className="w-full px-6 py-4 text-center text-lg bg-[#0f0620] border-2 border-violet-700/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 focus:shadow-lg focus:shadow-violet-500/30 transition-all duration-300 placeholder-slate-500 text-white"
-                aria-label="Nickname Input"
+                className="w-full px-5 py-4 text-center text-lg bg-ink border border-velvet-line focus:outline-none focus:border-gold transition-colors placeholder:text-ash text-paper"
               />
-              <label className="flex items-start gap-2 text-left text-xs text-slate-400 cursor-pointer">
+              <label className="flex items-start gap-2.5 text-left text-xs text-ash cursor-pointer leading-relaxed">
                 <input
                   type="checkbox"
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
-                  className="mt-0.5 accent-violet-500"
+                  className="mt-0.5 w-4 h-4 accent-[#c9a24a] shrink-0"
                 />
                 <span>Autorizo o uso do meu login Google apenas para garantir um voto único. Meu e-mail não é armazenado (LGPD).</span>
               </label>
-              {error && <p className="text-red-400 text-sm font-medium">{error}</p>}
+              {error && <p className="text-burgundy-bright text-sm" role="alert">{error}</p>}
               <button
                 onClick={() => onStart(nickname)}
                 disabled={!canStart}
-                className="w-full px-6 py-4 text-lg font-bold bg-gradient-to-r from-violet-600 to-amber-500 hover:from-violet-500 hover:to-amber-400 text-white rounded-xl uppercase tracking-widest shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full px-6 py-4 font-semibold bg-gold hover:bg-gold-bright text-ink uppercase tracking-[0.14em] transition-colors duration-200 disabled:bg-velvet-line disabled:text-ash disabled:cursor-not-allowed"
               >
-                Começar a Votação
+                Começar a votação
               </button>
             </div>
           )}
         </div>
-      </div>
+      </section>
 
+      {/* Números do bolão */}
+      <dl className="w-full grid grid-cols-3 border-y border-velvet-line divide-x divide-velvet-line">
+        {stats.map(({ value, label }) => (
+          <div key={label} className="py-5 sm:py-6">
+            <dt className="px-1 text-[10px] sm:text-xs uppercase tracking-[0.1em] sm:tracking-[0.18em] text-ash">{label}</dt>
+            <dd className="mt-1.5 font-display font-mono text-2xl sm:text-4xl text-paper">{value}</dd>
+          </div>
+        ))}
+      </dl>
 
-      {/* Como Funciona */}
-      <div className="w-full bg-[#100720]/90 backdrop-blur-sm border-2 border-violet-900/50 rounded-2xl overflow-hidden">
+      {/* Como funciona */}
+      <section className="w-full max-w-2xl text-left">
         <button
           onClick={() => setShowRules(prev => !prev)}
-          className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-violet-400/5 transition-colors duration-200"
+          aria-expanded={showRules}
+          className="w-full flex items-center justify-between py-4 border-b border-velvet-line text-left group"
         >
-          <span className="font-bold text-base uppercase tracking-widest text-slate-200">Como Funciona</span>
-          <span className={`text-violet-400 text-xl font-bold transition-transform duration-300 ${showRules ? 'rotate-45' : ''}`}>+</span>
+          <span className="font-display text-lg sm:text-xl uppercase text-paper group-hover:text-gold transition-colors">Como funciona</span>
+          <PlusIcon className={`w-5 h-5 text-gold transition-transform duration-300 ${showRules ? 'rotate-45' : ''}`} />
         </button>
-
         {showRules && (
-          <div className="px-6 pb-6 animate-fadeIn border-t border-violet-900/40">
-            <ul className="mt-4 space-y-3 text-left">
-              <li className="flex items-start gap-3">
-                <span className="text-amber-400 font-black mt-0.5">01</span>
-                <span className="text-slate-300 text-sm leading-relaxed">Escolha um candidato em cada uma das <strong className="text-white">{totalCategories} categorias</strong> disponíveis.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-amber-400 font-black mt-0.5">02</span>
-                <span className="text-slate-300 text-sm leading-relaxed">Cada categoria vale uma quantidade de pontos diferente. O total máximo é <strong className="text-white">{maxPoints} pontos</strong>.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-amber-400 font-black mt-0.5">03</span>
-                <span className="text-slate-300 text-sm leading-relaxed">Os votos são comparados com os <strong className="text-white">vencedores reais</strong> do The Game Awards — anunciados em 11 de Dezembro.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-amber-400 font-black mt-0.5">04</span>
-                <span className="text-slate-300 text-sm leading-relaxed">Quem acertar mais categorias (com peso em pontos) fica no topo do <strong className="text-white">ranking</strong>.</span>
-              </li>
-            </ul>
-          </div>
+          <ul className="pt-5 space-y-3 text-sm text-ash leading-relaxed animate-fadeIn">
+            <li>Escolha um indicado em cada uma das <strong className="text-paper font-semibold">{totalCategories} categorias</strong> e revise a cédula antes de confirmar.</li>
+            <li>Cada categoria vale uma quantidade diferente de pontos. O máximo possível é <strong className="text-paper font-semibold">{maxPoints} pontos</strong>.</li>
+            <li>Os votos são comparados com os <strong className="text-paper font-semibold">vencedores reais</strong> do The Game Awards, anunciados em 11 de dezembro.</li>
+            <li>Quem somar mais pontos fica no topo do <strong className="text-paper font-semibold">ranking</strong>.</li>
+          </ul>
         )}
-      </div>
-
-      {/* GitHub */}
-      <a
-        href="https://github.com/Kozato01/GOTY-2025"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-2 text-slate-500 hover:text-violet-400 transition-colors duration-200 text-sm font-medium pb-2"
-      >
-        <GitHubIcon />
-        Ver código no GitHub
-      </a>
-
+      </section>
     </div>
   );
 };

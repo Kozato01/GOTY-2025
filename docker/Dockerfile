@@ -36,7 +36,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./
 
 # Copia os arquivos buildados do React
-COPY --from=frontend-builder /app/dist ./static
+# (o vite.config.ts agora gera em ../backend/static → /backend/static no container)
+COPY --from=frontend-builder /backend/static ./static
 
 # Garante que a pasta data existe (o CsvRepository cria/repara o CSV sozinho)
 RUN mkdir -p data

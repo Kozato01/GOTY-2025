@@ -383,7 +383,7 @@ def get_config():
             "status": "success",
             "config": {
                 "showResults": config.get("show_results", True),
-                "backendType": os.getenv("DB_BACKEND", "firestore"),
+                "backendType": os.getenv("DB_BACKEND", "postgres"),
                 "backendAvailable": repo.is_available(),
             },
         }), 200
@@ -395,7 +395,7 @@ def get_config():
 @app.route("/api/db-status", methods=["GET"])
 def db_status():
     try:
-        backend = os.getenv("DB_BACKEND", "firestore")
+        backend = os.getenv("DB_BACKEND", "postgres")
         available = repo.is_available()
         status_info = {
             "backend": backend,
@@ -441,7 +441,7 @@ def serve_react_static(path):
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     logger.info("Iniciando servidor Flask...")
-    logger.info("Backend de dados: %s", os.getenv("DB_BACKEND", "firestore"))
+    logger.info("Backend de dados: %s", os.getenv("DB_BACKEND", "postgres"))
 
     if not os.path.exists(CONFIG_FILE):
         save_config({"show_results": True})

@@ -10,13 +10,18 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
         proxy: {
           '/api': {
-            target: 'http://localhost:5000',
+            target: 'http://localhost:8080',
             changeOrigin: true,
             secure: false,
           }
         }
       },
       plugins: [react()],
+      build: {
+        // Saída direto onde o Flask serve a SPA (backend/static)
+        outDir: '../backend/static',
+        emptyOutDir: true,
+      },
       define: {
         // Só o Client ID (público por natureza) vai pro bundle — nunca segredos.
         // Fallback para env do processo (build em Docker/CI sem config/.env).

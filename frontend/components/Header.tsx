@@ -9,23 +9,15 @@ interface HeaderProps {
   onLogout?: () => void;
 }
 
-const TgaLogo = () => (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-violet-400 drop-shadow-[0_0_8px_rgba(139,92,246,0.7)]">
-    <path d="M6 5h12M6 5c-1 0-2 1-2 2v2c0 2 1 3 2 3M6 5V3h12v2M18 5c1 0 2 1 2 2v2c0 2-1 3-2 3M6 12c0 3 3 5 6 5s6-2 6-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 17v3m-3 0h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 9l.5 1.5h1.5l-1.2.9.5 1.6-1.3-1-1.3 1 .5-1.6-1.2-.9h1.5z" fill="currentColor"/>
-  </svg>
-);
-
 const allNavItems: { view: View; label: string }[] = [
-  { view: 'intro', label: 'Home' },
+  { view: 'intro', label: 'Início' },
   { view: 'categories', label: 'Categorias' },
   { view: 'voters', label: 'Participantes' },
   { view: 'results', label: 'Resultados' },
   { view: 'winners', label: 'Ganhadores' },
 ];
 
-const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, hasVotes, currentUser, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, currentUser, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleNavigate = (view: View) => {
@@ -34,103 +26,99 @@ const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, hasVotes, curr
   };
 
   return (
-    <>
-      {menuOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-      )}
-      <header className="w-full max-w-4xl mx-auto mb-8 bg-[#100720]/90 backdrop-blur-sm border-2 border-violet-600/60 rounded-2xl animate-fadeIn shadow-lg shadow-violet-600/20 relative z-50 overflow-hidden">
-
-        {/* Andar 1 — Logo centrado */}
-        <div
-          className="flex items-center justify-center gap-3 py-4 cursor-pointer border-b border-violet-700/30 hover:bg-violet-400/5 transition-colors duration-200"
+    <header className="relative z-50 w-full mb-8 sm:mb-12 border-b border-velvet-line">
+      <div className="flex items-center justify-between gap-4 h-16">
+        <button
           onClick={() => handleNavigate('intro')}
+          className="flex items-center gap-2.5 shrink-0"
+          aria-label="GOTY Vote 2026, início"
         >
-          <TgaLogo />
-          <div className="text-center leading-none">
-            <span className="font-black text-2xl sm:text-3xl tracking-widest uppercase text-white">
-              GOTY{' '}
-              <span className="bg-gradient-to-r from-violet-400 to-amber-400 text-transparent bg-clip-text">VOTE</span>{' '}
-              <span className="text-violet-400">2026</span>
+          <img src="/brand/tga-logo.svg" alt="" className="h-6 w-auto" />
+          <span className="font-display text-lg sm:text-xl uppercase text-paper leading-none">
+            GOTY Vote <span className="text-gold">2026</span>
+          </span>
+        </button>
+
+        <nav className="hidden md:flex items-center gap-7" aria-label="Principal">
+          {allNavItems.map(({ view, label }) => {
+            const active = currentView === view;
+            return (
+              <button
+                key={view}
+                onClick={() => handleNavigate(view)}
+                aria-current={active ? 'page' : undefined}
+                className={`relative py-5 text-xs font-semibold uppercase tracking-[0.16em] transition-colors duration-200 ${
+                  active ? 'text-gold' : 'text-ash hover:text-paper'
+                }`}
+              >
+                {label}
+                <span
+                  className={`absolute -bottom-px left-0 right-0 h-px bg-gold transition-transform duration-300 origin-center ${
+                    active ? 'scale-x-100' : 'scale-x-0'
+                  }`}
+                />
+              </button>
+            );
+          })}
+          {currentUser && (
+            <span className="flex items-center gap-3 pl-6 border-l border-velvet-line">
+              <span className="text-xs text-ash max-w-[10rem] truncate">{currentUser}</span>
+              <button
+                onClick={onLogout}
+                className="text-xs font-semibold uppercase tracking-[0.16em] text-ash hover:text-gold transition-colors"
+              >
+                Sair
+              </button>
             </span>
-          </div>
-          <TgaLogo />
-        </div>
+          )}
+        </nav>
 
-        {/* Usuário logado + Sair */}
-        {currentUser && (
-          <div className="flex items-center justify-center gap-3 px-4 py-2 border-b border-violet-700/30 bg-violet-400/5">
-            <span className="text-xs sm:text-sm text-slate-300">
-              Logado como <strong className="text-violet-300">{currentUser}</strong>
-            </span>
-            <button
-              onClick={() => { onLogout?.(); setMenuOpen(false); }}
-              className="px-3 py-1 text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white border border-violet-700/50 hover:border-violet-400 rounded-lg transition-all duration-200"
-            >
-              Sair
-            </button>
-          </div>
-        )}
+        <button
+          onClick={() => setMenuOpen(prev => !prev)}
+          className="md:hidden flex flex-col justify-center items-center gap-1.5 w-11 h-11 text-ash hover:text-gold transition-colors"
+          aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+          aria-expanded={menuOpen}
+        >
+          <span className={`block w-6 h-px bg-current transition-transform duration-300 ${menuOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
+          <span className={`block w-6 h-px bg-current transition-opacity duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
+          <span className={`block w-6 h-px bg-current transition-transform duration-300 ${menuOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
+        </button>
+      </div>
 
-        {/* Andar 2 — Nav links (desktop) + hamburger (mobile) */}
-        <div className="flex items-center justify-center px-4 py-1.5">
-
-          {/* Desktop: tabs visíveis */}
-          <nav className="hidden sm:flex items-center gap-1">
-            {allNavItems.map(({ view, label }) => {
-              const active = currentView === view;
-              return (
+      {menuOpen && (
+        <>
+          <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMenuOpen(false)} />
+          <nav
+            className="md:hidden absolute right-0 left-0 top-full z-50 bg-velvet border border-velvet-line shadow-[0_16px_32px_rgba(0,0,0,0.6)] animate-fadeIn"
+            aria-label="Principal"
+          >
+            {allNavItems.map(({ view, label }) => (
+              <button
+                key={view}
+                onClick={() => handleNavigate(view)}
+                aria-current={currentView === view ? 'page' : undefined}
+                className={`w-full text-left px-5 py-4 text-sm font-semibold uppercase tracking-[0.14em] border-b border-velvet-line ${
+                  currentView === view ? 'text-gold' : 'text-ash hover:text-paper'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+            {currentUser && (
+              <div className="flex items-center justify-between px-5 py-4">
+                <span className="text-sm text-ash truncate">{currentUser}</span>
                 <button
-                  key={view}
-                  onClick={() => handleNavigate(view)}
-                  className={`relative px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all duration-200 rounded-lg
-                    ${active
-                      ? 'text-violet-400'
-                      : 'text-slate-400 hover:text-white hover:bg-violet-400/5'
-                    }`}
+                  onClick={() => { onLogout?.(); setMenuOpen(false); }}
+                  className="text-sm font-semibold uppercase tracking-[0.14em] text-gold"
                 >
-                  {label}
-                  {active && (
-                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-3/4 h-0.5 bg-gradient-to-r from-violet-400 to-amber-400 rounded-full" />
-                  )}
+                  Sair
                 </button>
-              );
-            })}
-          </nav>
-
-          {/* Mobile: hamburger */}
-          <div className="sm:hidden relative w-full flex justify-end">
-            <button
-              onClick={() => setMenuOpen(prev => !prev)}
-              className="flex flex-col justify-center items-center gap-1.5 px-3 py-2 rounded-lg text-slate-300 hover:text-violet-400 hover:bg-violet-400/10 transition-all duration-200"
-              aria-label="Menu"
-            >
-              <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-              <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
-              <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-            </button>
-
-            {menuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-52 bg-[#100720] border-2 border-violet-600/60 rounded-xl shadow-2xl shadow-violet-600/20 overflow-hidden animate-fadeIn">
-                {allNavItems.map(({ view, label }) => (
-                  <button
-                    key={view}
-                    onClick={() => handleNavigate(view)}
-                    className={`w-full text-left px-5 py-3 text-sm font-bold uppercase tracking-widest transition-all duration-200 border-b border-violet-900/30 last:border-b-0
-                      ${currentView === view
-                        ? 'text-violet-400 bg-violet-400/10'
-                        : 'text-slate-300 hover:text-white hover:bg-violet-400/5'
-                      }`}
-                  >
-                    {label}
-                  </button>
-                ))}
               </div>
             )}
-          </div>
-
-        </div>
-      </header>
-    </>
+          </nav>
+        </>
+      )}
+    </header>
   );
 };
 

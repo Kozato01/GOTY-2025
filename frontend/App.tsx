@@ -111,8 +111,8 @@ const App: React.FC = () => {
     if (isLoading) {
       return (
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-400 mx-auto mb-4"></div>
-          <p className="text-slate-400">Carregando...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
+          <p className="text-ash">Carregando...</p>
         </div>
       );
     }
@@ -120,18 +120,18 @@ const App: React.FC = () => {
     if (apiError) {
       return (
         <div className="text-center py-12">
-          <div className="bg-red-900/20 border border-red-700 rounded-lg p-6 mb-4">
-            <h3 className="text-red-400 font-bold mb-2">Erro de Conexão</h3>
-            <p className="text-slate-300 mb-4">{apiError}</p>
+          <div className="bg-burgundy/10 border border-burgundy/60 rounded-lg p-6 mb-4">
+            <h3 className="text-burgundy-bright font-bold mb-2">Erro de Conexão</h3>
+            <p className="text-paper/80 mb-4">{apiError}</p>
             <button
               onClick={loadVotesFromApi}
-              className="px-6 py-2 bg-violet-600 text-white rounded-md font-bold hover:bg-violet-500 transition-all duration-300"
+              className="px-6 py-2 bg-gold text-ink rounded-md font-bold hover:bg-gold-bright transition-all duration-300"
             >
               Tentar Novamente
             </button>
           </div>
-          <p className="text-slate-500 text-sm">
-            Certifique-se de que o servidor Flask está rodando com: <code className="bg-[#0f0620] px-2 py-1 rounded">python app.py</code>
+          <p className="text-ash text-sm">
+            Certifique-se de que o servidor Flask está rodando com: <code className="bg-velvet px-2 py-1 rounded">python app.py</code>
           </p>
         </div>
       );
@@ -171,27 +171,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-transparent text-white p-4 sm:p-8 flex flex-col items-center justify-center transition-all duration-500">
-      {/* Glowing corners */}
-      <div className="fixed top-0 left-0 w-40 h-40 bg-violet-600 opacity-15 blur-3xl rounded-full animate-pulse"></div>
-      <div className="fixed top-0 right-0 w-40 h-40 bg-amber-600 opacity-10 blur-3xl rounded-full animate-pulse"></div>
-      <div className="fixed bottom-0 left-0 w-40 h-40 bg-amber-600 opacity-10 blur-3xl rounded-full animate-pulse"></div>
-      <div className="fixed bottom-0 right-0 w-40 h-40 bg-violet-600 opacity-15 blur-3xl rounded-full animate-pulse"></div>
-
-      {/* Telegram Button */}
-      <a
-        href="https://t.me/seu_grupo_aqui"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-gradient-to-br from-violet-600 to-amber-500 hover:from-violet-500 hover:to-amber-400 rounded-full shadow-lg shadow-violet-500/50 hover:shadow-xl hover:shadow-amber-500/50 transition-all duration-300 hover:scale-110 active:scale-95"
-        title="Junte-se ao nosso grupo do Telegram"
-      >
-        <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
-        </svg>
-      </a>
-
-      <div className="relative z-10 w-full max-w-4xl">
+    <div className="min-h-screen bg-transparent text-paper px-4 sm:px-8 pb-8 flex flex-col items-center transition-all duration-500">
+      <div className="relative z-10 w-full max-w-5xl">
         <Header
           currentView={view}
           onNavigate={handleNavigate}
@@ -199,12 +180,15 @@ const App: React.FC = () => {
           currentUser={currentUser}
           onLogout={handleLogout}
         />
-        {renderView()}
+        {/* key={view} remonta a tela ao navegar → animação de entrada consistente */}
+        <div key={view} className="animate-fadeIn">
+          {renderView()}
+        </div>
 
         <footer className="mt-8 text-center">
           <button
             onClick={() => handleNavigate('privacy')}
-            className="text-slate-500 hover:text-violet-400 transition-colors duration-200 text-xs font-medium underline-offset-2 hover:underline"
+            className="text-ash hover:text-gold transition-colors duration-200 text-xs font-medium underline-offset-2 hover:underline"
           >
             Política de Privacidade · LGPD
           </button>

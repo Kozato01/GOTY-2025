@@ -1,8 +1,8 @@
 @echo off
 REM Script para build e execução do Docker no Windows
-REM Rodar de dentro da pasta docker\
+REM Rodar da raiz do projeto
 
-set ENV_FILE=..\config\.env
+set ENV_FILE=config\.env
 
 echo 🐳 GOTY VOTE 2026 - Docker Build ^& Run
 echo ======================================
@@ -25,7 +25,7 @@ if errorlevel 1 exit /b 1
 
 echo.
 echo ✅ Container iniciado com sucesso!
-echo 🌐 Aplicacao disponivel em: http://localhost:8080
+echo 🌐 Aplicacao disponivel em: http://localhost:8020
 echo.
 echo 📊 Comandos uteis:
 echo    docker compose logs -f    # Ver logs

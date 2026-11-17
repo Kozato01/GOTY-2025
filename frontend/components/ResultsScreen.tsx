@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { UserVote, UserScore, Winners, Category } from '../types';
 import { loadWinners } from '../constants';
 import { ApiService } from '../services/api';
+import { TrophyIcon, CheckIcon, XIcon } from './icons';
 
 interface ResultsScreenProps {
   allVotes: UserVote[];
@@ -85,44 +86,38 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ allVotes, categories }) =
     document.body.removeChild(link);
   };
 
-  const TrophyIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M18.5 2h-13A2.5 2.5 0 003 4.5V11c0 3.23 1.94 6.03 4.75 7.42c.54.27 1.13.42 1.75.5V22h2h2h2v-3.08c.62-.08 1.21-.23 1.75-.5C20.06 17.03 22 14.23 22 11V4.5A2.5 2.5 0 0019.5 2H18.5M12 14c-1.66 0-3-1.34-3-3s1.34-3 3-3s3 1.34 3 3s-1.34 3-3 3z" />
-    </svg>
-  );
-
   const getPodiumClasses = (index: number) => {
-    if (index === 0) return 'bg-[#ffd700]/10 border-[#ffd700] shadow-lg shadow-[#ffd700]/20';
-    if (index === 1) return 'bg-slate-400/10 border-slate-400';
-    if (index === 2) return 'bg-amber-700/10 border-amber-700';
-    return 'bg-[#0f0620]/70 border-violet-900/30';
+    if (index === 0) return 'bg-gold/10 border-gold shadow-lg shadow-gold/20';
+    if (index === 1) return 'bg-paper/5 border-paper/40';
+    if (index === 2) return 'bg-burgundy/10 border-burgundy/60';
+    return 'bg-ink/70 border-velvet-line';
   };
 
   const getBorderColor = (index: number) => {
-    if (index === 0) return 'border-[#ffd700]';
-    if (index === 1) return 'border-slate-400';
-    if (index === 2) return 'border-amber-700';
-    return 'border-violet-900/30';
+    if (index === 0) return 'border-gold';
+    if (index === 1) return 'border-paper/40';
+    if (index === 2) return 'border-burgundy/60';
+    return 'border-velvet-line';
   };
 
   if (loading) {
     return (
-      <div className="w-full max-w-4xl mx-auto animate-fadeIn p-8 bg-[#100720]/90 backdrop-blur-md border border-violet-800/40 rounded-lg text-center">
-        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-widest text-shadow-sky">
+      <div className="w-full max-w-4xl mx-auto animate-fadeIn p-5 sm:p-8 bg-velvet/95 border border-velvet-line rounded-lg text-center">
+        <h1 className="font-display text-3xl sm:text-6xl uppercase tracking-wide text-shadow-gold text-paper">
           Carregando...
         </h1>
-        <p className="mt-4 text-lg text-slate-300">Verificando configurações de resultados...</p>
+        <p className="mt-4 text-lg text-ash">Verificando configurações de resultados...</p>
       </div>
     );
   }
 
   if (!showResults) {
     return (
-      <div className="w-full max-w-4xl mx-auto animate-fadeIn p-8 bg-[#100720]/90 backdrop-blur-md border border-violet-800/40 rounded-lg text-center">
-        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-widest text-shadow-sky">
+      <div className="w-full max-w-4xl mx-auto animate-fadeIn p-5 sm:p-8 bg-velvet/95 border border-velvet-line rounded-lg text-center">
+        <h1 className="font-display text-3xl sm:text-6xl uppercase tracking-wide text-shadow-gold text-paper">
           Resultados Ocultos
         </h1>
-        <p className="mt-4 text-lg text-slate-300">
+        <p className="mt-4 text-lg text-ash">
           A apuração ainda não começou. Os resultados serão revelados em breve!
         </p>
       </div>
@@ -130,12 +125,12 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ allVotes, categories }) =
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto animate-fadeIn p-8 bg-[#100720]/90 backdrop-blur-sm border-2 border-violet-600/60 rounded-2xl shadow-2xl shadow-violet-500/20">
+    <div className="w-full max-w-4xl mx-auto animate-fadeIn p-4 sm:p-8 bg-velvet/95 border border-velvet-line rounded-lg shadow-2xl shadow-black/40">
       <div className="text-center mb-10">
-        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-widest bg-gradient-to-r from-violet-400 to-amber-400 text-transparent bg-clip-text">
-          Resultados
+        <h1 className="font-display text-3xl sm:text-6xl uppercase tracking-wide text-paper">
+          Resulta<span className="text-gold">dos</span>
         </h1>
-        <p className="mt-2 text-lg text-slate-300">Ranking de pontuação dos participantes.</p>
+        <p className="mt-2 text-lg text-ash">Ranking de pontuação dos participantes.</p>
       </div>
 
       <div className="space-y-4">
@@ -143,34 +138,37 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ allVotes, categories }) =
           <div key={user.nickname}>
             <div
               onClick={() => setDetailedView(detailedView === user.nickname ? null : user.nickname)}
-              className={`p-4 sm:p-6 rounded-lg border-2 flex items-center justify-between transition-all duration-300 cursor-pointer ${getPodiumClasses(index)} ${detailedView === user.nickname ? 'rounded-b-none' : ''}`}
+              className={`p-3 sm:p-6 rounded-lg border-2 flex items-center justify-between gap-2 transition-all duration-300 cursor-pointer ${getPodiumClasses(index)} ${detailedView === user.nickname ? 'rounded-b-none' : ''}`}
             >
-              <div className="flex items-center space-x-4">
-                <div className="text-2xl font-bold w-8 text-center text-slate-300">{index + 1}</div>
-                {index === 0 && <TrophyIcon className="w-8 h-8 text-[#ffd700]" />}
-                <div className="text-xl sm:text-2xl font-semibold text-white">{user.nickname}</div>
+              <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                <div className="font-mono text-lg sm:text-2xl font-bold w-6 sm:w-8 text-center text-ash shrink-0">{index + 1}</div>
+                {index === 0 && <TrophyIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gold shrink-0" />}
+                <div className="text-base sm:text-2xl font-semibold text-paper truncate min-w-0">{user.nickname}</div>
               </div>
-              <div className="text-2xl sm:text-3xl font-black text-violet-400">
-                {user.score} <span className="text-base font-normal text-slate-400">pts</span>
+              <div className="font-display text-xl sm:text-3xl text-gold shrink-0">
+                {user.score} <span className="font-sans text-sm sm:text-base font-normal text-ash">pts</span>
               </div>
             </div>
             {detailedView === user.nickname && (
-              <div className={`bg-[#0f0620]/80 p-4 rounded-b-lg border-x-2 border-b-2 ${getBorderColor(index)} animate-fadeIn`}>
-                <h4 className="text-lg font-bold mb-3 text-center text-violet-400">Votos de {user.nickname}</h4>
+              <div className={`bg-ink/80 p-4 rounded-b-lg border-x-2 border-b-2 ${getBorderColor(index)} animate-fadeIn`}>
+                <h4 className="text-lg font-bold mb-3 text-center text-gold">Votos de {user.nickname}</h4>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
                   {categories.map(category => {
                     const userVote = user.votes[category.name];
                     const winner = winners[category.name];
                     const isCorrect = userVote === winner;
                     return (
-                      <li key={category.id} className="flex justify-between items-center py-1 border-b border-violet-900/30">
-                        <span className="text-slate-300">{category.name}:</span>
+                      <li key={category.id} className="flex justify-between items-center gap-2 py-1 border-b border-velvet-line min-w-0">
+                        <span className="text-ash shrink-0">{category.name}:</span>
                         {userVote ? (
-                          <span className={`font-semibold ${isCorrect ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {userVote} {isCorrect ? '✔' : '✘'}
+                          <span className={`font-semibold truncate min-w-0 text-right inline-flex items-center gap-1 justify-end ${isCorrect ? 'text-emerald-400' : 'text-burgundy-bright'}`}>
+                            <span className="truncate">{userVote}</span>
+                            {isCorrect
+                              ? <CheckIcon className="w-3.5 h-3.5 shrink-0" />
+                              : <XIcon className="w-3.5 h-3.5 shrink-0" />}
                           </span>
                         ) : (
-                          <span className="text-slate-500">Não votou</span>
+                          <span className="text-ash/60">Não votou</span>
                         )}
                       </li>
                     );
@@ -183,7 +181,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ allVotes, categories }) =
       </div>
 
       {leaderboard.length === 0 && (
-        <p className="text-center text-slate-400 text-lg mt-10">
+        <p className="text-center text-ash text-lg mt-10">
           Nenhuma votação foi registrada ainda. Vote para ver o ranking!
         </p>
       )}
@@ -192,7 +190,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ allVotes, categories }) =
         <div className="mt-12 text-center">
           <button
             onClick={handleDownloadCSV}
-            className="px-8 py-3 text-base font-bold bg-gradient-to-r from-violet-600 to-amber-500 hover:from-violet-500 hover:to-amber-400 text-white rounded-md uppercase tracking-widest shadow-lg shadow-violet-500/40 hover:shadow-xl transition-all duration-300"
+            className="px-8 py-3 text-base font-bold bg-gold hover:bg-gold-bright text-ink rounded-md uppercase tracking-widest shadow-lg shadow-black/30 transition-all duration-300"
           >
             Baixar Votos (CSV)
           </button>
