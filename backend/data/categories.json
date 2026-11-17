@@ -11,23 +11,23 @@
           "title": "007 First Light"
         },
         {
-          "id": "g2",
+          "id": "g12",
           "title": "Control Resonant"
         },
         {
-          "id": "g8",
+          "id": "g31",
           "title": "Grand Theft Auto VI"
         },
         {
-          "id": "g3",
+          "id": "g58",
           "title": "Phantom Blade Zero"
         },
         {
-          "id": "g4",
+          "id": "g66",
           "title": "Resident Evil Requiem"
         },
         {
-          "id": "g9",
+          "id": "g77",
           "title": "The Legend of Zelda: Ocarina of Time"
         }
       ]
@@ -38,23 +38,23 @@
       "points": 5,
       "nominees": [
         {
-          "id": "g2",
+          "id": "g12",
           "title": "Control Resonant"
         },
         {
-          "id": "g8",
+          "id": "g31",
           "title": "Grand Theft Auto VI"
         },
         {
-          "id": "g3",
+          "id": "g58",
           "title": "Phantom Blade Zero"
         },
         {
-          "id": "g5",
+          "id": "g62",
           "title": "Pragmata"
         },
         {
-          "id": "g4",
+          "id": "g66",
           "title": "Resident Evil Requiem"
         }
       ]
@@ -69,19 +69,19 @@
           "title": "007 First Light"
         },
         {
-          "id": "g2",
+          "id": "g12",
           "title": "Control Resonant"
         },
         {
-          "id": "g8",
+          "id": "g31",
           "title": "Grand Theft Auto VI"
         },
         {
-          "id": "g4",
+          "id": "g66",
           "title": "Resident Evil Requiem"
         },
         {
-          "id": "g6",
+          "id": "g76",
           "title": "The Blood of Dawnwalker"
         }
       ]
@@ -92,24 +92,603 @@
       "points": 5,
       "nominees": [
         {
-          "id": "g2",
+          "id": "g12",
           "title": "Control Resonant"
         },
         {
-          "id": "g8",
+          "id": "g31",
           "title": "Grand Theft Auto VI"
         },
         {
-          "id": "g7",
+          "id": "g39",
           "title": "MOUSE: P.I. for Hire"
         },
         {
-          "id": "g3",
+          "id": "g58",
           "title": "Phantom Blade Zero"
         },
         {
-          "id": "g9",
+          "id": "g77",
           "title": "The Legend of Zelda: Ocarina of Time"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Melhor Trilha Sonora e Música",
+      "points": 5,
+      "nominees": [
+        {
+          "id": "g3",
+          "title": "Ace Combat 8: Wings of Theve"
+        },
+        {
+          "id": "g31",
+          "title": "Grand Theft Auto VI"
+        },
+        {
+          "id": "g47",
+          "title": "Mixtape"
+        },
+        {
+          "id": "g58",
+          "title": "Phantom Blade Zero"
+        },
+        {
+          "id": "g77",
+          "title": "The Legend of Zelda: Ocarina of Time"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Melhor Design de Áudio",
+      "points": 5,
+      "nominees": [
+        {
+          "id": "g3",
+          "title": "Ace Combat 8: Wings of Theve"
+        },
+        {
+          "id": "g12",
+          "title": "Control Resonant"
+        },
+        {
+          "id": "g31",
+          "title": "Grand Theft Auto VI"
+        },
+        {
+          "id": "g66",
+          "title": "Resident Evil Requiem"
+        },
+        {
+          "id": "g74",
+          "title": "Star Wars: Galactic Racer"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Melhor Performance",
+      "points": 5,
+      "nominees": [
+        {
+          "id": "g4",
+          "title": "Angela Sant’Albano — Resident Evil Requiem"
+        },
+        {
+          "id": "g36",
+          "title": "Liam McIntyre — Marvel’s Wolverine"
+        },
+        {
+          "id": "g40",
+          "title": "Manni L. Perez — Grand Theft Auto VI"
+        },
+        {
+          "id": "g57",
+          "title": "Patrick Gibson — 007 First Light"
+        },
+        {
+          "id": "g63",
+          "title": "Rahul Kohli — Saros"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Jogo de Impacto",
+      "points": 5,
+      "nominees": [
+        {
+          "id": "g9",
+          "title": "Big Walk"
+        },
+        {
+          "id": "g10",
+          "title": "Cairn"
+        },
+        {
+          "id": "g26",
+          "title": "Forever Ago"
+        },
+        {
+          "id": "g37",
+          "title": "Life is Strange: Reunion"
+        },
+        {
+          "id": "g86",
+          "title": "lily’s world XD"
+        },
+        {
+          "id": "g47",
+          "title": "Mixtape"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Melhor Jogo Contínuo",
+      "points": 5,
+      "nominees": [
+        {
+          "id": "g5",
+          "title": "Arc Raiders"
+        },
+        {
+          "id": "g23",
+          "title": "Final Fantasy XIV"
+        },
+        {
+          "id": "g27",
+          "title": "Fortnite"
+        },
+        {
+          "id": "g54",
+          "title": "No Man’s Sky"
+        },
+        {
+          "id": "g79",
+          "title": "The Witcher 3: Wild Hunt"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Melhor Suporte à Comunidade",
+      "points": 3,
+      "nominees": [
+        {
+          "id": "g13",
+          "title": "Crimson Desert"
+        },
+        {
+          "id": "g32",
+          "title": "Helldivers 2"
+        },
+        {
+          "id": "g54",
+          "title": "No Man’s Sky"
+        },
+        {
+          "id": "g79",
+          "title": "The Witcher 3: Wild Hunt"
+        },
+        {
+          "id": "g83",
+          "title": "Warframe"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Melhor Jogo Independente",
+      "points": 3,
+      "nominees": [
+        {
+          "id": "g9",
+          "title": "Big Walk"
+        },
+        {
+          "id": "g10",
+          "title": "Cairn"
+        },
+        {
+          "id": "g15",
+          "title": "Denshattack!"
+        },
+        {
+          "id": "g45",
+          "title": "Mewgenics"
+        },
+        {
+          "id": "g46",
+          "title": "Mina the Hollower"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Melhor Jogo Independente de Estreia",
+      "points": 3,
+      "nominees": [
+        {
+          "id": "g16",
+          "title": "Dressmaker"
+        },
+        {
+          "id": "g18",
+          "title": "Esoteric Ebb"
+        },
+        {
+          "id": "g56",
+          "title": "Orbitals"
+        },
+        {
+          "id": "g64",
+          "title": "Replaced"
+        },
+        {
+          "id": "g71",
+          "title": "Silver Pines"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Melhor Jogo Mobile",
+      "points": 3,
+      "nominees": [
+        {
+          "id": "g6",
+          "title": "Arknights: Endfield"
+        },
+        {
+          "id": "g48",
+          "title": "Monster Hunter Outlanders"
+        },
+        {
+          "id": "g52",
+          "title": "Neverness to Everness"
+        },
+        {
+          "id": "g60",
+          "title": "Pokémon Champions"
+        },
+        {
+          "id": "g84",
+          "title": "Where Winds Meet"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "Melhor Jogo VR/AR",
+      "points": 3,
+      "nominees": [
+        {
+          "id": "g25",
+          "title": "Forefront"
+        },
+        {
+          "id": "g33",
+          "title": "Into the Radius 2"
+        },
+        {
+          "id": "g38",
+          "title": "Little Nightmares VR: Altered Echoes"
+        },
+        {
+          "id": "g75",
+          "title": "Teenage Mutant Ninja Turtles: Empire City"
+        },
+        {
+          "id": "g81",
+          "title": "Thief VR: Legacy of Shadow"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "Melhor Jogo de Ação",
+      "points": 3,
+      "nominees": [
+        {
+          "id": "g3",
+          "title": "Ace Combat 8: Wings of Theve"
+        },
+        {
+          "id": "g29",
+          "title": "Gears of War: E-Day"
+        },
+        {
+          "id": "g55",
+          "title": "Onimusha: Way of the Sword"
+        },
+        {
+          "id": "g58",
+          "title": "Phantom Blade Zero"
+        },
+        {
+          "id": "g69",
+          "title": "Saros"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "Melhor Jogo de Ação e Aventura",
+      "points": 3,
+      "nominees": [
+        {
+          "id": "g1",
+          "title": "007 First Light"
+        },
+        {
+          "id": "g12",
+          "title": "Control Resonant"
+        },
+        {
+          "id": "g31",
+          "title": "Grand Theft Auto VI"
+        },
+        {
+          "id": "g62",
+          "title": "Pragmata"
+        },
+        {
+          "id": "g66",
+          "title": "Resident Evil Requiem"
+        },
+        {
+          "id": "g77",
+          "title": "The Legend of Zelda: Ocarina of Time"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "Melhor RPG",
+      "points": 3,
+      "nominees": [
+        {
+          "id": "g21",
+          "title": "Final Fantasy Resonance"
+        },
+        {
+          "id": "g24",
+          "title": "Fire Emblem: Fortune’s Weave"
+        },
+        {
+          "id": "g49",
+          "title": "Monster Hunter Stories 3: Twisted Reflection"
+        },
+        {
+          "id": "g76",
+          "title": "The Blood of Dawnwalker"
+        },
+        {
+          "id": "g82",
+          "title": "Trails in the Sky 2nd Chapter"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "Melhor Jogo de Luta",
+      "points": 3,
+      "nominees": [
+        {
+          "id": "g2",
+          "title": "2XKO"
+        },
+        {
+          "id": "g8",
+          "title": "Avatar Legends: The Fighting Game"
+        },
+        {
+          "id": "g34",
+          "title": "Invincible VS"
+        },
+        {
+          "id": "g42",
+          "title": "Marvel Tōkon: Fighting Souls"
+        },
+        {
+          "id": "g51",
+          "title": "My Hero Academia: All’s Justice"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "Melhor Jogo Para a Família",
+      "points": 3,
+      "nominees": [
+        {
+          "id": "g9",
+          "title": "Big Walk"
+        },
+        {
+          "id": "g35",
+          "title": "LEGO Batman: Legacy of the Dark Knight"
+        },
+        {
+          "id": "g53",
+          "title": "Nintendo Switch Sports Resort"
+        },
+        {
+          "id": "g61",
+          "title": "Pokémon Pokopia"
+        },
+        {
+          "id": "g85",
+          "title": "Yoshi and the Mysterious Book"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "Melhor Jogo de Simulação/Estratégia",
+      "points": 2,
+      "nominees": [
+        {
+          "id": "g45",
+          "title": "Mewgenics"
+        },
+        {
+          "id": "g59",
+          "title": "Planet Zoo 2"
+        },
+        {
+          "id": "g61",
+          "title": "Pokémon Pokopia"
+        },
+        {
+          "id": "g72",
+          "title": "Slay the Spire 2"
+        },
+        {
+          "id": "g73",
+          "title": "Star Wars Zero Company"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "name": "Melhor Jogo de Esportes/Corrida",
+      "points": 2,
+      "nominees": [
+        {
+          "id": "g17",
+          "title": "EA Sports FC 27"
+        },
+        {
+          "id": "g28",
+          "title": "Forza Horizon 6"
+        },
+        {
+          "id": "g53",
+          "title": "Nintendo Switch Sports Resort"
+        },
+        {
+          "id": "g70",
+          "title": "Screamer"
+        },
+        {
+          "id": "g74",
+          "title": "Star Wars: Galactic Racer"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Melhor Jogo Multiplayer",
+      "points": 2,
+      "nominees": [
+        {
+          "id": "g9",
+          "title": "Big Walk"
+        },
+        {
+          "id": "g11",
+          "title": "Call of Duty: Modern Warfare 4"
+        },
+        {
+          "id": "g29",
+          "title": "Gears of War: E-Day"
+        },
+        {
+          "id": "g41",
+          "title": "Marathon"
+        },
+        {
+          "id": "g44",
+          "title": "Meccha Chameleon"
+        },
+        {
+          "id": "g56",
+          "title": "Orbitals"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Melhor Adaptação",
+      "points": 2,
+      "nominees": [
+        {
+          "id": "g14",
+          "title": "Cyberpunk: Edgerunners 2"
+        },
+        {
+          "id": "g20",
+          "title": "Fallout (2ª temporada)"
+        },
+        {
+          "id": "g50",
+          "title": "Mortal Kombat II"
+        },
+        {
+          "id": "g65",
+          "title": "Resident Evil"
+        },
+        {
+          "id": "g78",
+          "title": "The Super Mario Galaxy Movie"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "name": "Inovação em Acessibilidade",
+      "points": 5,
+      "nominees": [
+        {
+          "id": "g7",
+          "title": "Assassin’s Creed Black Flag Resynced"
+        },
+        {
+          "id": "g28",
+          "title": "Forza Horizon 6"
+        },
+        {
+          "id": "g29",
+          "title": "Gears of War: E-Day"
+        },
+        {
+          "id": "g43",
+          "title": "Marvel’s Wolverine"
+        },
+        {
+          "id": "g68",
+          "title": "Rhythm Heaven Groove"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "name": "Jogo Mais Aguardado",
+      "points": 2,
+      "nominees": [
+        {
+          "id": "g19",
+          "title": "Fable"
+        },
+        {
+          "id": "g22",
+          "title": "Final Fantasy VII Revelation"
+        },
+        {
+          "id": "g30",
+          "title": "God of War Laufey"
+        },
+        {
+          "id": "g67",
+          "title": "Resident Evil Veronica"
+        },
+        {
+          "id": "g80",
+          "title": "The Witcher 4"
         }
       ]
     }

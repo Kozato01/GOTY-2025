@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { fitWideCover } from './cover';
 import { CATEGORIES } from '../constants';
 import { CheckIcon } from './icons';
 
@@ -18,6 +19,7 @@ const Cover: React.FC<{ src: string; alt: string; className?: string }> = ({ src
     loading="lazy"
     className={`w-full h-full object-cover ${className}`}
     onError={(e) => { e.currentTarget.src = FALLBACK_COVER; }}
+                  onLoad={fitWideCover}
   />
 );
 

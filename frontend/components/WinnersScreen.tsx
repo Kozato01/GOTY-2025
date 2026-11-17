@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { fitWideCover } from './cover';
 import { CATEGORIES, loadWinners } from '../constants';
 import { GoldTrophy } from './icons';
 
@@ -69,6 +70,7 @@ const WinnersScreen: React.FC = () => {
                   alt={goty.winner.title}
                   className="w-full h-full object-cover"
                   onError={(e) => { e.currentTarget.src = FALLBACK_COVER; }}
+                  onLoad={fitWideCover}
                 />
               </div>
               <div className="relative text-center sm:text-left">
@@ -97,6 +99,7 @@ const WinnersScreen: React.FC = () => {
                       loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                       onError={(e) => { e.currentTarget.src = FALLBACK_COVER; }}
+                  onLoad={fitWideCover}
                     />
                   </div>
                   <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-ash leading-snug">{category.name}</p>

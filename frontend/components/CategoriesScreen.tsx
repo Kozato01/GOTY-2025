@@ -1,4 +1,5 @@
 import React from 'react';
+import { fitWideCover } from './cover';
 import { CATEGORIES } from '../constants';
 
 const CategoriesScreen: React.FC = () => {
@@ -30,6 +31,7 @@ const CategoriesScreen: React.FC = () => {
                   <div className="aspect-[3/4] relative overflow-hidden bg-ink">
                     <img
                       src={nominee.imageUrl}
+                      onLoad={fitWideCover}
                       alt={nominee.title}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                       onError={(e) => {
