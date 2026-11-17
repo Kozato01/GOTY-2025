@@ -6,12 +6,30 @@
       "name": "Jogo do Ano",
       "points": 10,
       "nominees": [
-        { "id": "g1", "title": "Clair Obscur: Expedition 33" },
-        { "id": "g2", "title": "Death Stranding 2: On the Beach" },
-        { "id": "g3", "title": "Donkey Kong Bananza" },
-        { "id": "g4", "title": "Hades 2" },
-        { "id": "g5", "title": "Hollow Knight: Silksong" },
-        { "id": "g6", "title": "Kingdom Come: Deliverance 2" }
+        {
+          "id": "g1",
+          "title": "007 First Light"
+        },
+        {
+          "id": "g2",
+          "title": "Control Resonant"
+        },
+        {
+          "id": "g8",
+          "title": "Grand Theft Auto VI"
+        },
+        {
+          "id": "g3",
+          "title": "Phantom Blade Zero"
+        },
+        {
+          "id": "g4",
+          "title": "Resident Evil Requiem"
+        },
+        {
+          "id": "g9",
+          "title": "The Legend of Zelda: Ocarina of Time"
+        }
       ]
     },
     {
@@ -19,11 +37,26 @@
       "name": "Melhor Direção",
       "points": 5,
       "nominees": [
-        { "id": "g1", "title": "Clair Obscur: Expedition 33" },
-        { "id": "g2", "title": "Death Stranding 2: On the Beach" },
-        { "id": "g7", "title": "Ghost of Yotei" },
-        { "id": "g4", "title": "Hades 2" },
-        { "id": "g8", "title": "Split Fiction" }
+        {
+          "id": "g2",
+          "title": "Control Resonant"
+        },
+        {
+          "id": "g8",
+          "title": "Grand Theft Auto VI"
+        },
+        {
+          "id": "g3",
+          "title": "Phantom Blade Zero"
+        },
+        {
+          "id": "g5",
+          "title": "Pragmata"
+        },
+        {
+          "id": "g4",
+          "title": "Resident Evil Requiem"
+        }
       ]
     },
     {
@@ -31,11 +64,26 @@
       "name": "Melhor Narrativa",
       "points": 5,
       "nominees": [
-        { "id": "g1", "title": "Clair Obscur: Expedition 33" },
-        { "id": "g2", "title": "Death Stranding 2: On the Beach" },
-        { "id": "g7", "title": "Ghost of Yotei" },
-        { "id": "g6", "title": "Kingdom Come: Deliverance 2" },
-        { "id": "g9", "title": "Silent Hill f" }
+        {
+          "id": "g1",
+          "title": "007 First Light"
+        },
+        {
+          "id": "g2",
+          "title": "Control Resonant"
+        },
+        {
+          "id": "g8",
+          "title": "Grand Theft Auto VI"
+        },
+        {
+          "id": "g4",
+          "title": "Resident Evil Requiem"
+        },
+        {
+          "id": "g6",
+          "title": "The Blood of Dawnwalker"
+        }
       ]
     },
     {
@@ -43,23 +91,26 @@
       "name": "Melhor Direção de Arte",
       "points": 5,
       "nominees": [
-        { "id": "g1", "title": "Clair Obscur: Expedition 33" },
-        { "id": "g2", "title": "Death Stranding 2: On the Beach" },
-        { "id": "g7", "title": "Ghost of Yotei" },
-        { "id": "g4", "title": "Hades 2" },
-        { "id": "g5", "title": "Hollow Knight: Silksong" }
-      ]
-    },
-    {
-      "id": 4,
-      "name": "Melhor Direção de Arte",
-      "points": 5,
-      "nominees": [
-        { "id": "g1", "title": "Clair Obscur: Expedition 33" },
-        { "id": "g2", "title": "Death Stranding 2: On the Beach" },
-        { "id": "g7", "title": "Ghost of Yotei" },
-        { "id": "g4", "title": "Hades 2" },
-        { "id": "g5", "title": "Hollow Knight: Silksong" }
+        {
+          "id": "g2",
+          "title": "Control Resonant"
+        },
+        {
+          "id": "g8",
+          "title": "Grand Theft Auto VI"
+        },
+        {
+          "id": "g7",
+          "title": "MOUSE: P.I. for Hire"
+        },
+        {
+          "id": "g3",
+          "title": "Phantom Blade Zero"
+        },
+        {
+          "id": "g9",
+          "title": "The Legend of Zelda: Ocarina of Time"
+        }
       ]
     }
   ]

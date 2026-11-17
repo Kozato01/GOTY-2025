@@ -13,7 +13,7 @@ interface IntroScreenProps {
   categories: Category[];
 }
 
-const TGA_DATE = new Date('2026-12-11T20:00:00-05:00');
+const TGA_DATE = new Date('2026-12-10T20:00:00-05:00');
 
 function useCountdown(target: Date) {
   const calc = () => {
@@ -139,7 +139,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStart, onReturningUser, ini
           GOTY Vote <span className="text-gold">2026</span>
         </h1>
         <p className="mt-5 text-sm sm:text-base text-ash">
-          Bolão entre amigos · The Game Awards · 11 de dezembro
+          Bolão entre amigos · The Game Awards · 10 de dezembro
         </p>
 
         {/* Contagem regressiva */}
@@ -190,7 +190,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStart, onReturningUser, ini
                 <p className="mt-2 text-paper font-semibold">
                   Voto registrado, <span className="text-gold">{votedNickname}</span>
                 </p>
-                <p className="text-ash text-sm mt-1">Agora é torcer. Os vencedores saem em 11 de dezembro.</p>
+                <p className="text-ash text-sm mt-1">Agora é torcer. Os vencedores saem em 10 de dezembro.</p>
               </div>
               <button
                 onClick={() => onReturningUser(votedNickname)}
@@ -297,7 +297,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStart, onReturningUser, ini
           <ul className="pt-5 space-y-3 text-sm text-ash leading-relaxed animate-fadeIn">
             <li>Escolha um indicado em cada uma das <strong className="text-paper font-semibold">{totalCategories} categorias</strong> e revise a cédula antes de confirmar.</li>
             <li>Cada categoria vale uma quantidade diferente de pontos. O máximo possível é <strong className="text-paper font-semibold">{maxPoints} pontos</strong>.</li>
-            <li>Os votos são comparados com os <strong className="text-paper font-semibold">vencedores reais</strong> do The Game Awards, anunciados em 11 de dezembro.</li>
+            <li>Os votos são comparados com os <strong className="text-paper font-semibold">vencedores reais</strong> do The Game Awards, anunciados em 10 de dezembro.</li>
             <li>Quem somar mais pontos fica no topo do <strong className="text-paper font-semibold">ranking</strong>.</li>
           </ul>
         )}

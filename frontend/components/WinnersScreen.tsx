@@ -47,7 +47,7 @@ const WinnersScreen: React.FC = () => {
         <div className="mt-12 flex flex-col items-center text-center py-12 border-y border-velvet-line">
           <GoldTrophy className="w-16 h-20 opacity-40 grayscale" />
           <p className="mt-6 font-display text-2xl uppercase text-paper">Os envelopes ainda estão lacrados</p>
-          <p className="mt-2 text-ash">Os vencedores aparecem aqui depois da cerimônia, em 11 de dezembro.</p>
+          <p className="mt-2 text-ash">Os vencedores aparecem aqui depois da cerimônia, em 10 de dezembro.</p>
         </div>
       ) : (
         <>
